@@ -99,7 +99,7 @@
 		pictureH = $(this).find("img").css("height");
 		// svg countur
 		var zoomLayout = Raphael($(this)[0], pictureW, pictureH);
-		$("svg").css({"position" : "absolute", "top" : "0", "left" : "20px"});
+		$("svg").css({"position" : "absolute", "top" : "0", "left" : "0", "z-index" : 4});
 		zoomLayout.path(options['svgCountur'])
 			//styles for countur on wich event fires
 			.attr({"fill" : options['counturColor'], "fill-opacity" : options['counturOpacity'], "stroke-width" : 0, "stroke" : "none"}) 
@@ -117,11 +117,11 @@
 
     $.fn.zoom.default_options = {
     	zoomRad: 100, //radius of magnifier
-    	counturOpacity: 0,
-    	counturColor: '#f00',
+    	counturOpacity: 0.3, //countur background opacity
+    	counturColor: '#f00', //countur background color
     	zoomCoeff: 1.947, //zooming coefficient
     	zoomLensOffset: 25, // offset between zoom wrapper an zoom (magnifier)
-    	zoomedAreaXoffset: 20, //if zooming picture and zoom-picture has offset between each other
+    	zoomedAreaXoffset: 20, //if zooming picture and zoom picture has offset between each other
 		zoomedAreaYoffset: 732,
 		lensSrc: 'lens.png'
     };
