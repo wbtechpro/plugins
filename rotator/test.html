@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Load and rotate</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+<script type="text/javascript" src="rotator.jquery.js"></script>
+<style type="text/css">
+#pics{
+	overflow:hidden;
+	width:744px;height:400px;
+	cursor:w-resize;
+}
+#pics img{display:block;}
+html{height:101%;}
+.loading img{visibility:hidden;}
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#pics').addClass("loading");
+        $("#pics").rotate({
+            base_url: '/rotator/',
+            fileNumStart: 1,
+            fileNumEnd: 60,
+            startFrame: 30,
+            filePrefix: '',
+            invert: false,
+            onRotate: function(frame){ /*console.log(frame)*/},
+            onFrameLoaded:function(e){/*console.log('Frame loaded', e)*/},
+            onLoadFinish:function(e){$("#pics").css("background","none").removeClass("loading");/*console.log('Load Finish')*/}
+        });
+    });
+</script>
+
+</head>
+
+<body>
+<div id="pics" style="background:#FFF url('images/loader.gif') no-repeat center center;">
+</div>
+</body>
+</html>
