@@ -36,6 +36,8 @@
         var images_count = options.fileNumEnd - options.fileNumStart + 1;
         var element = this;
         var ready = false;
+        var img_width;
+        var img_height;
         
         // Storing instance object in data
         var rotator = {}
@@ -45,11 +47,24 @@
             // Create image elements
             var total = options.fileNumEnd - options.fileNumStart + 1;
             var loaded = 0;
+            var length = ('' + options.fileNumEnd).length;
             for (var i = options.fileNumStart; i <= options.fileNumEnd; i++){
+                var num = i;
+                if (options.zeroStarted && (('' + i).length < length)) {
+                    var div = length - ('' + i).length;
+                    for (var j = 0; j < div; j++) {
+                        num = '0' + num;
+                    }
+                }
+                console.log(num);
                 var img = new Image();
-                img.src = options.base_url + options.folder + options.filePrefix + i + '.' + options.extension;
+                img.src = options.base_url + options.folder + options.filePrefix + num + '.' + options.extension;
                 this.element.append(img);
                 $(img).bind('load', function(e){
+                    if (loaded == 0) {
+                        img_width = $(this).width();
+                        img_height = $(this).height();
+                    }
                     loaded++;
                     if (undefined != params['onFrameLoaded'])
                         params['onFrameLoaded']({loaded: loaded, total: total});
@@ -165,7 +180,7 @@
             if (options.invert)
                 z = -z;
             z = z + last_visible;
-            if( (z < 0) || (z >= images_count))
+            if((z < 0) || (z >= images_count))
                 z = Math.abs(images_count - Math.abs(z));
             element.find("img:eq(" + z + ")").show();
             if ((old_frame != z) && (undefined != options.onRotate))
@@ -179,6 +194,10 @@
     		max_diff = parseInt(max_diff);
     		element.children().hide();
 		    element.find("img:eq(" + options.startFrame + ")").show();
+            if (undefined != options.cursorImg) {
+                element.css('cursor', options.cursorImg);
+            }
+            element.css({overflow: 'hidden', width: img_width,height: img_height});
         }
         
         return this;
@@ -201,7 +220,9 @@
         frameInterval: 100,
         onFrameLoaded: undefined, // Image loaded callback
         onLoadFinish: undefined, // All image loaded callback
-        onRotate: undefined // Image rotate callback
+        onRotate: undefined, // Image rotate callback
+        cursorImg: undefined,
+        zeroStarted: false
     }
     
     function error(msg){
