@@ -20,13 +20,15 @@ html{height:101%;}
     $(document).ready(function(){
         $('#pics').addClass("loading");
         $("#pics").rotate({
-            base_url: '1',
+            base_url: 'example/',
+            folder: 'auto_rotate/',
             fileNumStart: 1,
             fileNumEnd: 60,
             startFrame: 30,
             filePrefix: '',
-            invert: false,
-            zeroStarted: false,
+            invert: true,
+            autorotate: true,
+            zeroStarted: true,
             onRotate: function(frame){ /*console.log(frame)*/},
             onFrameLoaded:function(e){/*console.log('Frame loaded', e)*/},
             onLoadFinish:function(e){$("#pics").css("background","none").removeClass("loading");/*console.log('Load Finish')*/}

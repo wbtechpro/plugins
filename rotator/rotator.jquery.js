@@ -38,6 +38,7 @@
         var ready = false;
         var img_width;
         var img_height;
+        var rotate_interval_id;
         
         // Storing instance object in data
         var rotator = {}
@@ -56,7 +57,6 @@
                         num = '0' + num;
                     }
                 }
-                console.log(num);
                 var img = new Image();
                 img.src = options.base_url + options.folder + options.filePrefix + num + '.' + options.extension;
                 this.element.append(img);
@@ -198,8 +198,39 @@
                 element.css('cursor', options.cursorImg);
             }
             element.css({overflow: 'hidden', width: img_width,height: img_height});
+
+            // Start autorotate if needed
+            if (true == options.autorotate) {
+                start_autorotate();
+                element.children().bind('mouseenter', function() {
+                    stop_autorotate();
+                });
+                element.children().bind('mouseleave', function() {
+                    start_autorotate();
+                });
+            }
         }
         
+        function start_autorotate() {
+            rotate_interval_id = setInterval(function() {
+                if (mouse_down)
+                    return;
+                last_visible++;
+                element.children().hide();
+                if((last_visible < 0) || (last_visible >= images_count))
+                    last_visible = Math.abs(images_count - Math.abs(last_visible));
+                element.find("img:eq(" + last_visible + ")").show();
+                if (undefined != options.onRotate)
+                    options.onRotate(last_visible);
+            }, options.frameInterval);
+        }
+
+        function stop_autorotate() {
+            if (rotate_interval_id) {
+                clearInterval(rotate_interval_id);
+            }
+        }
+
         return this;
     }
     
@@ -216,8 +247,8 @@
         fileNumEnd: 60,
         startFrame: 1,
         mouseWheel: true,
-        autorotate: true,
-        frameInterval: 100,
+        autorotate: false,
+        frameInterval: 50,
         onFrameLoaded: undefined, // Image loaded callback
         onLoadFinish: undefined, // All image loaded callback
         onRotate: undefined, // Image rotate callback
