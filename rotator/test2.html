@@ -23,12 +23,15 @@ html{height:101%;}
             base_url: '1',
             fileNumStart: 1,
             fileNumEnd: 60,
-            startFrame: 30,
+            startFrame: 1,
             filePrefix: '',
             invert: false,
             zeroStarted: false,
             onRotate: function(frame){ /*console.log(frame)*/},
-            onFrameLoaded:function(e){/*console.log('Frame loaded', e)*/},
+            onFrameLoaded:function(e){
+                sprite_pos = -e.loaded * 40;
+                $("#loader").css("background-position", "0 " + sprite_pos + "px");
+            },
             onLoadFinish:function(e){$("#pics").css("background","none").removeClass("loading");/*console.log('Load Finish')*/}
         });
     });
