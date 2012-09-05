@@ -28,10 +28,7 @@ html{height:101%;}
             invert: false,
             zeroStarted: false,
             onRotate: function(frame){ /*console.log(frame)*/},
-            onFrameLoaded:function(e){
-                sprite_pos = -e.loaded * 40;
-                $("#loader").css("background-position", "0 " + sprite_pos + "px");
-            },
+            onFrameLoaded:function(e){},
             onLoadFinish:function(e){$("#pics").css("background","none").removeClass("loading");/*console.log('Load Finish')*/}
         });
     });

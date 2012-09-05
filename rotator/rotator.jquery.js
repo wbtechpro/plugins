@@ -39,6 +39,7 @@
         var img_width;
         var img_height;
         var rotate_interval_id;
+        var hovered;
         
         // Storing instance object in data
         var rotator = {}
@@ -141,6 +142,17 @@
                         options.onRotate(last_visible);
 	            })
             }
+
+            if (options.autorotate) {
+                element.bind('mouseenter', function() {
+                    hovered = true;
+                    stop_autorotate();
+                });
+                element.bind('mouseleave', function() {
+                    hovered = false;
+                    start_autorotate();
+                });
+            }
         }else{
             this[0].addEventListener('touchend', on_end_callback, false)
             
@@ -202,16 +214,12 @@
             // Start autorotate if needed
             if (true == options.autorotate) {
                 start_autorotate();
-                element.children().bind('mouseenter', function() {
-                    stop_autorotate();
-                });
-                element.children().bind('mouseleave', function() {
-                    start_autorotate();
-                });
             }
         }
         
         function start_autorotate() {
+            if (rotate_interval_id || hovered)
+                return;
             rotate_interval_id = setInterval(function() {
                 if (mouse_down)
                     return;
@@ -228,6 +236,7 @@
         function stop_autorotate() {
             if (rotate_interval_id) {
                 clearInterval(rotate_interval_id);
+                rotate_interval_id = false;
             }
         }
 

@@ -15,7 +15,7 @@
 html{height:101%;}
 .loading img{visibility:hidden;}
 #pics.loading {cursor: pointer;}
-#loader{width:40px;height:40px;position:absolute;top:50%;left:50%;margin:-20px 0 0 -20px;background-position:center center;background-repeat:no-repeat;background-image:url('example/auto_rotate/preload-sprite.png');background-position:0 0;}
+#loader{width:40px;height:40px;position:relative;top:50%;left:50%;margin:-20px 0 0 -20px;background-position:center center;background-repeat:no-repeat;background-image:url('example/auto_rotate/preload-sprite.png');background-position:0 0;}
 </style>
 
 <script type="text/javascript">
@@ -36,7 +36,10 @@ html{height:101%;}
             autoload: false,
             zeroStarted: true,
             onRotate: function(frame){ /*console.log(frame)*/},
-            onFrameLoaded:function(e){/*console.log('Frame loaded', e)*/},
+            onFrameLoaded:function(e){
+                sprite_pos = -e.loaded * 40;
+                $("#loader").css("background-position", "0 " + sprite_pos + "px");
+            },
             onLoadFinish:function(e){$("#pics").css("background","none").removeClass("loading");/*console.log('Load Finish')*/}
         });
     });
