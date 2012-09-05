@@ -8,8 +8,8 @@
 <style type="text/css">
 #pics{
 	overflow:hidden;
-	width:744px;height:400px;
-	cursor:w-resize;
+	width:410px;height:410px;
+	cursor:n-resize;
 }
 #pics img{display:block;}
 html{height:101%;}
@@ -20,13 +20,16 @@ html{height:101%;}
     $(document).ready(function(){
         $('#pics').addClass("loading");
         $("#pics").rotate({
-            base_url: '1',
+            base_url: 'example/',
+            folder: 'no_auto_rotate/',
             fileNumStart: 1,
             fileNumEnd: 60,
             startFrame: 1,
-            filePrefix: '',
+            filePrefix: '7yury_anim__rgba00',
             invert: false,
-            zeroStarted: false,
+            zeroStarted: true,
+            axisX: false,
+            axisY: true,
             onRotate: function(frame){ /*console.log(frame)*/},
             onFrameLoaded:function(e){},
             onLoadFinish:function(e){$("#pics").css("background","none").removeClass("loading");/*console.log('Load Finish')*/}
