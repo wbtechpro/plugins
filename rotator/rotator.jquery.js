@@ -129,7 +129,7 @@
 	                }else if (undefined != e.detail){
 	                    var up = (e.detail > 0);
 	                } else {
-                        var uo = (e.originalEvent.wheelDelta > 0);
+                        var up = (e.originalEvent.wheelDelta > 0);
                     }
 	                if (up){
 	                    last_visible++;
