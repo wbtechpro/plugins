@@ -124,16 +124,13 @@
 	        if (options.mouseWheel){
 	            $(this).bind('mousewheel DOMMouseScroll', function(e, delta){
 	                e.preventDefault();
-                    if (e.hasOwnProperty('wheelDelta')) {
-                        var delta = e.wheelDelta;
-                    } else {
-                        var delta = e.originalEvent.wheelDelta;
-                    }
 	                if (undefined != e.wheelDelta){
 	                    var up = (e.wheelDelta > 0);
 	                }else if (undefined != e.detail){
 	                    var up = (e.detail > 0);
-	                }
+	                } else {
+                        var uo = (e.originalEvent.wheelDelta > 0);
+                    }
 	                if (up){
 	                    last_visible++;
                     }else{
