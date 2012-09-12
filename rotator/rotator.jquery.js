@@ -124,6 +124,7 @@
 	        if (options.mouseWheel){
 	            $(this).bind('mousewheel DOMMouseScroll', function(e, delta){
 	                e.preventDefault();
+                    console.log(e.wheelDelta);
 	                if (undefined != e.wheelDelta){
 	                    var up = (e.wheelDelta > 0);
 	                }else if (undefined != e.detail){
