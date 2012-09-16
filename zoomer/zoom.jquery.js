@@ -62,7 +62,10 @@
 			}
 
 			// while mouse move background moves too
-			$('#' + zoomId).css({"left" : x + "px", "top" : y + "px", "visibility" : "visible"});
+			if (!options['fixedLensPosition'])
+				$('#' + zoomId).css({"left" : x + "px", "top" : y + "px", "visibility" : "visible"});
+			else
+				$('#' + zoomId).css({"visibility" : "visible"});
 			// while mouse move background moves too
 			$('#' + zoomerId).css({"background-position" : -bgx + "px -" + bgy + "px"});
 		}
@@ -78,7 +81,8 @@
 			}
 			y = y - zoomOffset.top; // set magnifier position
 			x = x - zoomOffset.left;
-			$('#' + zoomId).show().css({"top" : x + "px", "left": y + "px"}); // achieve magnifier !
+			if (!options['fixedLensPosition'])
+				$('#' + zoomId).show().css({"top" : x + "px", "left": y + "px"}); // achieve magnifier !
 		}
 
 		function end(evt){
@@ -86,12 +90,26 @@
 		}
 
 
-		$(this).css({'position': 'relative', 'margin': 0, 'background': "#000 url('ebola-bg.jpg') no-repeat 0 0"})
+		$(this).css({'position': 'relative', 'margin': 0})
 		// create magnifier
 		$(this).append('<div style="visibility:hidden" id="' + zoomId + '"><div id="' + zoomerId + '"></div><div id="' + lensId + '"></div></div>');
-		$('#' + lensId).css({height : '100%', 'width' : '100%', 'position' : 'absolute', 'background' : "url('" + options['lensSrc'] + "') no-repeat 0 0", 'z-index' : '3', 'top' : '0', 'left' : '0'})
-		$("#" + zoomerId).css({'background-repeat' : 'no-repeat', "background-image" : "url('" + options['zoomSrc'] + "')", "width" : 2 * options['zoomRad'] + "px", "height" : 2 * options['zoomRad'] + "px", "border-radius" : options['zoomRad'] + "px", "-webkit-border-radius" : options['zoomRad'] + "px", "-moz-border-radius" : ['zoomRad'] + "px", "margin-top" : options['zoomLensOffset'] + "px", "margin-left" : options['zoomLensOffset'] + "px"});
-		$("#" + zoomId).css({"width" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px", "height" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px", 'position': 'absolute'});
+		$('#' + lensId).css({height : '100%', 'width' : '100%', 'position' : 'absolute', 'z-index' : '3', 'top' : '0', 'left' : '0'});
+		if (options['lensSrc']) {
+			$('#' + lensId).css('background', "url('" + options['lensSrc'] + "') no-repeat 0 0");
+		}
+		if (options['zoomRad']) {
+			$("#" + zoomerId).css({'background-repeat' : 'no-repeat', "background-image" : "url('" + options['zoomSrc'] + "')", "width" : 2 * options['zoomRad'] + "px", "height" : 2 * options['zoomRad'] + "px", "border-radius" : options['zoomRad'] + "px", "-webkit-border-radius" : options['zoomRad'] + "px", "-moz-border-radius" : ['zoomRad'] + "px", "margin-top" : options['zoomLensOffset'] + "px", "margin-left" : options['zoomLensOffset'] + "px"});	
+			$("#" + zoomId).css({"width" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px", "height" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px", 'position': 'absolute'});
+		} else {
+			$("#" + zoomerId).css({'background-repeat' : 'no-repeat', "background-image" : "url('" + options['zoomSrc'] + "')", "width" : options['zoomWidth'], "height" : options['zoomHeight'] + "px", "margin-top" : options['zoomLensOffset'] + "px", "margin-left" : options['zoomLensOffset'] + "px"});
+			$("#" + zoomId).css({"width" : options['zoomWidth'] + "px", "height" :  options['zoomHeight'] + "px", 'position': 'absolute'});
+		}
+		
+		if (options['fixedLensPosition']) {
+			$("#" + zoomerId).css({'left': options['fixedLensX'], 'top': options['fixedLensY']})
+			$("#" + zoomId).css({'left': options['fixedLensX'], 'top': options['fixedLensY']})
+		}
+
 		// get offset of zooming picture
 		zoomOffset = $(this).offset();
 		// get zooming picture size
@@ -100,7 +118,13 @@
 		// svg countur
 		var zoomLayout = Raphael($(this)[0], pictureW, pictureH);
 		$("svg").css({"position" : "absolute", "top" : "0", "left" : "0", "z-index" : 4});
-		zoomLayout.path(options['svgCountur'])
+
+		if (options['svgCountur']) {
+			var area = zoomLayout.path(options['svgCountur']);
+		} else {
+			var area = zoomLayout.rect(0, 0, pictureW, pictureH);
+		}
+			area
 			//styles for countur on wich event fires
 			.attr({"fill" : options['counturColor'], "fill-opacity" : options['counturOpacity'], "stroke-width" : 0, "stroke" : "none"}) 
 			.hover(start, end).mousemove(move) // touche events
@@ -111,18 +135,23 @@
     $.fn.zoom.counter = 1;
 
     $.fn.zoom.required_options = [
-    	'svgCountur',
     	'zoomSrc'
     ];
 
     $.fn.zoom.default_options = {
     	zoomRad: 100, //radius of magnifier
+    	zoomWidth: 200, // Set size of rectangle zoomer
+    	zoomHeight: 200, // used only if zoomRad set to false
     	counturOpacity: 0.3, //countur background opacity
     	counturColor: '#f00', //countur background color
     	zoomCoeff: 1.947, //zooming coefficient
     	zoomLensOffset: 25, // offset between zoom wrapper an zoom (magnifier)
     	zoomedAreaXoffset: 20, //if zooming picture and zoom picture has offset between each other
 		zoomedAreaYoffset: 732,
-		lensSrc: 'lens.png'
+		lensSrc: 'lens.png', // false to disable
+		svgCountur: false, // false to disable
+		fixedLensPosition: false, // Zommer not mooving if set to true
+		fixedLensX: 0, // Position of fixed lens in pixels
+		fixedLensY: 0
     };
 })(jQuery)
