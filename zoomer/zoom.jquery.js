@@ -29,6 +29,7 @@
 		var zoomId = "zoom-" + $.fn.zoom.counter; //zoom wrapper
 		var lensId = "lens-" + $.fn.zoom.counter; // lens above zoom block
 		var zoomerId = "zoomer-" + $.fn.zoom.counter; //in magnifier we have same picture that we want to zoom, but in background. 
+		var overlayerId = "overlay-" + $.fn.zoom.counter; //in magnifier we have same picture that we want to zoom, but in background. 
 		var x; //x coord
 		var y; //y coord
 		var bgx; //background X position of picture in magnifier 
@@ -45,7 +46,7 @@
 			} else if (mobile) {
 				x = evt.pageX; // clientX needed in ios <5
 				y = evt.pageY;
-				event.preventDefault();
+				evt.preventDefault();
 			}
 
 			y = y - zoomOffset.top; // get mouse coordinates with offset
@@ -92,22 +93,33 @@
 
 		$(this).css({'position': 'relative', 'margin': 0})
 		// create magnifier
-		$(this).append('<div style="visibility:hidden" id="' + zoomId + '"><div id="' + zoomerId + '"></div><div id="' + lensId + '"></div></div>');
+		if (options['fixedLensPosition'] && options['fixedLensElement']) {
+			$(options['fixedLensElement']).attr('id', zoomId)
+				.append('<div id="' + zoomerId + '"></div><div id="' + lensId + '"></div>');
+		} else {
+			$(this).append('<div style="visibility:hidden" id="' + zoomId + '"><div id="' + zoomerId + '"></div><div id="' + lensId + '"></div></div>');
+		}
+
 		$('#' + lensId).css({height : '100%', 'width' : '100%', 'position' : 'absolute', 'z-index' : '3', 'top' : '0', 'left' : '0'});
 		if (options['lensSrc']) {
 			$('#' + lensId).css('background', "url('" + options['lensSrc'] + "') no-repeat 0 0");
 		}
 		if (options['zoomRad']) {
 			$("#" + zoomerId).css({'background-repeat' : 'no-repeat', "background-image" : "url('" + options['zoomSrc'] + "')", "width" : 2 * options['zoomRad'] + "px", "height" : 2 * options['zoomRad'] + "px", "border-radius" : options['zoomRad'] + "px", "-webkit-border-radius" : options['zoomRad'] + "px", "-moz-border-radius" : ['zoomRad'] + "px", "margin-top" : options['zoomLensOffset'] + "px", "margin-left" : options['zoomLensOffset'] + "px"});	
-			$("#" + zoomId).css({"width" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px", "height" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px", 'position': 'absolute'});
+			$("#" + zoomId).css({"width" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px", "height" : 2 * (options['zoomLensOffset'] + options['zoomRad']) + "px"});
 		} else {
 			$("#" + zoomerId).css({'background-repeat' : 'no-repeat', "background-image" : "url('" + options['zoomSrc'] + "')", "width" : options['zoomWidth'], "height" : options['zoomHeight'] + "px", "margin-top" : options['zoomLensOffset'] + "px", "margin-left" : options['zoomLensOffset'] + "px"});
-			$("#" + zoomId).css({"width" : options['zoomWidth'] + "px", "height" :  options['zoomHeight'] + "px", 'position': 'absolute'});
+			$("#" + zoomId).css({"width" : options['zoomWidth'] + "px", "height" :  options['zoomHeight'] + "px"});
 		}
-		
-		if (options['fixedLensPosition']) {
-			$("#" + zoomerId).css({'left': options['fixedLensX'], 'top': options['fixedLensY']})
-			$("#" + zoomId).css({'left': options['fixedLensX'], 'top': options['fixedLensY']})
+
+		if (!options['fixedLensPosition'] || !options['fixedLensElement']) {
+			$('#' + zoomId).css({'position': 'absolute'});
+		}
+
+		if (options['fixedLensPosition'] && !options['fixedLensElement']) {
+			$("#" + zoomerId).css({'left': options['fixedLensX'], 'top': options['fixedLensY']});
+			$("#" + zoomId).css({'left': options['fixedLensX'], 'top': options['fixedLensY']});
+			$('#' + overlayerId).css({'left': options['fixedLensX'], 'top': options['fixedLensY']});
 		}
 
 		// get offset of zooming picture
@@ -115,21 +127,33 @@
 		// get zooming picture size
 		pictureW = $(this).find("img").css("width");
 		pictureH = $(this).find("img").css("height");
-		// svg countur
-		var zoomLayout = Raphael($(this)[0], pictureW, pictureH);
+
+		if (options['opacityOverlayer'] && options['backgroundColorOverlayer']) {
+			$(this).append('<div id=' + overlayerId + '></div>');
+			$('#' + overlayerId).css({'opacity': options['opacityOverlayer'], 'background-color': options['backgroundColorOverlayer'], width: pictureW, height: pictureH, position: 'absolute', 'top': 0, 'left': 0, 'z-index': 3});
+		}
+
+		// svg contour
+		if (options['opacityOverlayer'] && options['backgroundColorOverlayer']) {
+			var zoomLayout = Raphael($('#' + overlayerId)[0], pictureW, pictureH);
+		} else {
+			var zoomLayout = Raphael($(this)[0], pictureW, pictureH);
+		}
+		
 		$("svg").css({"position" : "absolute", "top" : "0", "left" : "0", "z-index" : 4});
 
-		if (options['svgCountur']) {
-			var area = zoomLayout.path(options['svgCountur']);
+		if (options['svgcontour']) {
+			var area = zoomLayout.path(options['svgcontour']);
 		} else {
 			var area = zoomLayout.rect(0, 0, pictureW, pictureH);
 		}
-			area
-			//styles for countur on wich event fires
-			.attr({"fill" : options['counturColor'], "fill-opacity" : options['counturOpacity'], "stroke-width" : 0, "stroke" : "none"}) 
-			.hover(start, end).mousemove(move) // touche events
-			.touchstart(start).touchmove(move)
-			.touchend(end);
+
+		area
+		//styles for contour on wich event fires
+		.attr({"fill" : options['contourColor'], "fill-opacity" : options['contourOpacity'], "stroke-width" : 0, "stroke" : "none"}) 
+		.hover(start, end).mousemove(move) // touche events
+		.touchstart(start).touchmove(move)
+		.touchend(end);
     }
 
     $.fn.zoom.counter = 1;
@@ -139,19 +163,22 @@
     ];
 
     $.fn.zoom.default_options = {
-    	zoomRad: 100, //radius of magnifier
-    	zoomWidth: 200, // Set size of rectangle zoomer
-    	zoomHeight: 200, // used only if zoomRad set to false
-    	counturOpacity: 0.3, //countur background opacity
-    	counturColor: '#f00', //countur background color
-    	zoomCoeff: 1.947, //zooming coefficient
-    	zoomLensOffset: 25, // offset between zoom wrapper an zoom (magnifier)
-    	zoomedAreaXoffset: 20, //if zooming picture and zoom picture has offset between each other
+		zoomRad: 100, //radius of magnifier
+		zoomWidth: 200, // Set size of rectangle zoomer
+		zoomHeight: 200, // used only if zoomRad set to false
+		contourOpacity: 0.3, //contour background opacity
+		contourColor: '#f00', //contour background color
+		zoomCoeff: 1.947, //zooming coefficient
+		zoomLensOffset: 25, // offset between zoom wrapper an zoom (magnifier)
+		zoomedAreaXoffset: 20, //if zooming picture and zoom picture has offset between each other
 		zoomedAreaYoffset: 732,
 		lensSrc: 'lens.png', // false to disable
-		svgCountur: false, // false to disable
+		svgcontour: false, // false to disable
 		fixedLensPosition: false, // Zommer not mooving if set to true
 		fixedLensX: 0, // Position of fixed lens in pixels
-		fixedLensY: 0
+		fixedLensY: 0,
+		fixedLensElement: false, // jQuery selector
+		opacityOverlayer: false, // integer from 0 to 1
+		backgroundColorOverlayer: false // correct css color
     };
 })(jQuery)

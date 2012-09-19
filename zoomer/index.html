@@ -7,9 +7,9 @@
 /*necessary rools*/
 #ebola{position:relative;}
 #ebola img{display:block;}
-/*svg{top:0;left:0;z-index:4;}*/
-
-/*optional rule*/
+.zommed-image {
+	margin-left: 0px;
+}
 svg path{cursor:url('no.cur'), pointer}
 </style>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
@@ -26,12 +26,13 @@ svg path{cursor:url('no.cur'), pointer}
 			zoomCoeff: 6,
 			counturOpacity: 0,
 			lensSrc: false,
-			fixedLensPosition: true,
-			zoomRad: false,
+			fixedLensPosition: false,
+			zoomRad: 50,
 			fixedLensX: -25,
 			fixedLensY: 200,
-			zoomWidth: 640,
-			zoomHeight: 300,
+			opacityOverlayer: 0.5,
+			backgroundColorOverlayer: '#666',
+			contourOpacity:0
 		});
 	})
 </script>
@@ -40,5 +41,7 @@ svg path{cursor:url('no.cur'), pointer}
 <div id="ebola">
 <img src="map-small.jpg" width="640" height="200">
 </div>
+<br>
+<div class="zommed-image"></div>
 </body>
 </html>
