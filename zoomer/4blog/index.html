@@ -13,15 +13,27 @@ svg *{cursor:url('../no.cur'), pointer}
 <script type="text/javascript">
 $(document).ready(function() {
 	$("#luzhniki").zoom({
-zoomSrc: 'luzhniki-scheme.jpg',
-zoomRad:200,
-zoomCoeff:1,
-lensSrc:false,
-zoomedAreaXoffset:0,
-zoomedAreaYoffset:0,
-contourOpacity:0,
-zoomLensOffset:0
-//		:'../no.cur'
+	  zoomSrc: 'luzhniki-scheme.jpg',
+	  zoomRad:200,
+	  zoomCoeff:1,
+	  lensSrc:false,
+	  zoomedAreaXoffset:0,
+	  zoomedAreaYoffset:0,
+	  contourOpacity:0,
+	  zoomLensOffset:0
+	  //		:'../no.cur'
+	});
+	
+	$("#earth").zoom({
+	  zoomSrc: 'earth-big.jpg',
+	  zoomRad:100,
+	  zoomCoeff:8.258,
+	  lensSrc:false,
+	  zoomedAreaXoffset:0,
+	  zoomedAreaYoffset:0,
+	  contourOpacity:0.3,
+	  zoomLensOffset:0
+	  //svgcontour:'circle'
 	});
 });
 </script>
@@ -29,9 +41,8 @@ zoomLensOffset:0
 
 <body>
 
-<h4></h4>
-
-<h4></h4>
+<h4>Ученый</h4>
+<div id="earth"><img src="earth-small.jpg" width="496" height="496" alt="планета земля"></div>
 
 <h4>Взгляд изнутри</h4>
 <div id="luzhniki">
