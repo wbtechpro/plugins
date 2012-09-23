@@ -11,7 +11,7 @@
         }
         
         // Plugin Initialization
-        var options = $.extend($.fn.rotate.default_options, params);
+        var options = $.extend({}, $.fn.rotate.default_options, params);
         
         if (!options.axisX && !options.axisY){
             error('You must set axisX or axisY option to TRUE');

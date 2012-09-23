@@ -9,7 +9,9 @@
     		throw new Error('Target element must contained img element');
 
     	// Plugin Initialization
-	    var options = $.extend($.fn.zoom.default_options, params);
+	    var options = $.extend({}, $.fn.zoom.default_options, params);
+
+	    console.log(zoomId, options, params);
 
 	    for (var req in $.fn.zoom.required_options) {
     		if (options.hasOwnProperty(req))
@@ -154,6 +156,8 @@
 		.hover(start, end).mousemove(move) // touche events
 		.touchstart(start).touchmove(move)
 		.touchend(end);
+
+
     }
 
     $.fn.zoom.counter = 1;
