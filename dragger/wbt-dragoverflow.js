@@ -26,7 +26,7 @@ $("p img").wbtDragOverflow({
 (function($){
     $.fn.wbtDragOverflow = function(params){
 		if ($(this).size() === 0) {
-    		throw new Error('Draggable element not found');
+    		return false
 		}
 		var options = $.extend($.fn.wbtDragOverflow.options, params),
 			els = $(this),
