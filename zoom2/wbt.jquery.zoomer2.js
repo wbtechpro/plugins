@@ -26,6 +26,7 @@ var zoomed_info=[
 
 
 var zoom_obj = "#zoom-map";
+
 var z;
 var x;
 var y;
@@ -45,20 +46,20 @@ $(document).ready(function () {
 	var i=0;
 	function iteration(){
 	  $(zoom_obj).append(
-		'<div class="zoom-pointer" style="display:none;left:' + 
-		//attention! hardcode!
-		((zoomed_info[i][0] / zoomed_info[i][2])+25)+ 'px;top:' + 
-		//attention! hardcode!
-		((zoomed_info[i][1] / zoomed_info[i][2])+25)+ 'px;" data-zoom="' + 
-		zoomed_info[i][2] + '"></div><img width="' + 
+		'<div class="zoom-pointer" style="left:' + 
+		//attention! hardcode!+25display:none;
+		(zoomed_info[i][0] / zoomed_info[i][2])+ 'px;top:' + 
+		//attention! hardcode!+25
+		(zoomed_info[i][1] / zoomed_info[i][2])+ 'px;" data-zoom="' + 
+		zoomed_info[i][2] + '"><img src="magnify.png" width="60" height="60"></div><img width="' + 
 		zoomed_info[i][4] + '" height="' + 
 		zoomed_info[i][5] + '" class="zoomed" style="left:'+
 		(zoom_width - zoomed_info[i][4]/2)+'px;top:'+
 		(zoom_height-zoomed_info[i][5]/2)+'px" src="' + 
 		zoomed_info[i][3] + '">'
 	  );
-//attention! hardcode!
-	  $(".zoom-pointer:eq("+i+")").animate({"width":"toggle","height":"toggle","top":"-=25px","left":"-=25px"},{duration:1500, easing:"easeOutBounce"})
+	  //attention! hardcode!.animate({"width":"toggle","height":"toggle","top":"-=25px","left":"-=25px"},{duration:1500, easing:"easeOutBounce"});
+	  $(".zoom-pointer:eq("+i+")");
 	  if(i<zoomed_info.length-1){i++;setTimeout(iteration,200);}
 	  else {return false }
 	}

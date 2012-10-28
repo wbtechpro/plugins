@@ -8,16 +8,9 @@
 #zoom-map{overflow:hidden;position:relative;}
 #zoom-map img{display:block;}
 .zoom-pointer{
-	position:absolute;z-index:3;
-	border-radius:30px;-webkit-border-radius:30px;-moz-border-radius:30px;
-	-moz-animation:1.4s ease-in-out animateSize;
-	cursor:pointer; opacity:.6; /*background:url('magnify.png') no-repeat 0 0;background-color:;*/
-/*	*/
-}
-@-moz-keyframes animateSize{
-	from{ width:0; height:0}
-	to{width:60px;height:60px;}
-}
+	width:50px;height:50px;position:absolute;z-index:3;
+	border-radius:25px;-webkit-border-radius:25px;-moz-border-radius:25px;
+	background-color: #FF0;opacity:.5;cursor:pointer;}
 #zoom-map img.zoomed{position:absolute;z-index:2;cursor:pointer;display:none;}
 </style>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
