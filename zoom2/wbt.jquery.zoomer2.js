@@ -6,7 +6,7 @@ Released under the MIT licence http://opensource.org/licenses/mit-license.php
 Date of release 8.10.2012
 
 README see at wbtech.pro/blog/zoom2
-example see at wbtech.pro/cases/zoom2
+example see at wbtech.pro/cases/newzoom
 
 SHORT MANUAL
 1. create array "zoomed_info" to set zooming images
