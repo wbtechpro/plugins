@@ -1,5 +1,5 @@
 /*
-Zoomer v1
+Zoomer v.7
 WB--Tech.Lab plugins family (jQuery depended)
 Plugin #6 for zoomimg image fragments version 1
 Released under the MIT licence http://opensource.org/licenses/mit-license.php
@@ -8,15 +8,13 @@ Date of release 8.10.2012
 README see at wbtech.pro/blog/zoom2
 example see at wbtech.pro/cases/zoom2
 
-*/
-
-/* SHORT MANUAL
+SHORT MANUAL
 1. create array "zoomed_info" to set zooming images
 2. set images with zooming areas. legend:
 	x,y,zoom-coeff,zoom-file-src,zoom-file-width,zoom-file-height
 	x and y are coordinates relative to whole image-canvas when it's zoomed
 3. put code in #zoom-map id
-
+4. offset of magnify is hardcode=30 px !
 var zoomed_info=[
 [1600,1000,2.5,'folder/image.src',800,800],
 [1250,1280,2.5,'folder/image2.src',800,800]
@@ -26,7 +24,6 @@ var zoomed_info=[
 
 
 var zoom_obj = "#zoom-map";
-
 var z;
 var x;
 var y;
@@ -34,6 +31,7 @@ var w;
 var h;
 var num;
 var zoom_pics = new Array();
+
 $(document).ready(function () {
     var zoom_img = $(zoom_obj).children("img:eq(0)");
     var zoom_width = parseInt($(zoom_img).css("width")) / 2;
@@ -47,33 +45,33 @@ $(document).ready(function () {
 	function iteration(){
 	  $(zoom_obj).append(
 		'<div class="zoom-pointer" style="left:' + 
-		//attention! hardcode!+25display:none;
-		(zoomed_info[i][0] / zoomed_info[i][2])+ 'px;top:' + 
-		//attention! hardcode!+25
-		(zoomed_info[i][1] / zoomed_info[i][2])+ 'px;" data-zoom="' + 
+		((zoomed_info[i][0] / zoomed_info[i][2]) - 30) + 'px;top:' + 
+		((zoomed_info[i][1] / zoomed_info[i][2]) - 30) + 'px;" data-zoom="' + 
 		zoomed_info[i][2] + '"><img src="magnify.png" width="60" height="60"></div><img width="' + 
 		zoomed_info[i][4] + '" height="' + 
-		zoomed_info[i][5] + '" class="zoomed" style="left:'+
-		(zoom_width - zoomed_info[i][4]/2)+'px;top:'+
-		(zoom_height-zoomed_info[i][5]/2)+'px" src="' + 
+		zoomed_info[i][5] + '" class="zoomed" style="left:' + 
+		(zoom_width - zoomed_info[i][4] / 2) + 'px;top:' + 
+		(zoom_height - zoomed_info[i][5] / 2) + 'px" src="' + 
 		zoomed_info[i][3] + '">'
 	  );
-	  //attention! hardcode!.animate({"width":"toggle","height":"toggle","top":"-=25px","left":"-=25px"},{duration:1500, easing:"easeOutBounce"});
+	  
 	  $(".zoom-pointer:eq("+i+")");
+/* js animate of pointers appiarance
+	  .animate({"width":"toggle","height":"toggle","top":"-=25px","left":"-=25px"},{duration:1500, easing:"easeOutBounce"});
+*/
 	  if(i<zoomed_info.length-1){i++;setTimeout(iteration,200);}
 	  else {return false }
 	}
 	iteration();
     var zoom_pointers = $(".zoom-pointer");
-	
     $(zoom_obj).on("click",".zoom-pointer",(function () {
         num = $(".zoom-pointer").index(this);
-		console.log(num);
+
         z = $(this).attr("data-zoom");
         x = $(this).css("left");
-        x = parseInt(x);
+        x = parseInt(x) + 30;
         y = $(this).css("top");
-        y = parseInt(y);
+        y = parseInt(y) + 30;
         $(zoom_img).fadeTo("fast", .8).animate({
             "marginLeft": (zoom_width - z * x),
             "marginTop": (zoom_height - z * y),
@@ -116,8 +114,8 @@ $(document).ready(function () {
             duration: 400
         });
         $(this).prev(".zoom-pointer:hidden").animate({
-            left: x + "px",
-            top: y + "px",
+            left: x - 30 + "px",
+            top: y - 30 + "px",
             "opacity": "show"
         });
         $(".zoom-pointer").animate({
