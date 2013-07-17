@@ -1,0 +1,29 @@
+.wbt-rotator {overflow:hidden;position:relative;cursor:pointer;}
+.wbt-rotator-image {display:none;}
+.wbt-rotator-image__active {display:block;}
+
+.wbt-rotator-cover {display:block;}
+.wbt-rotator__loaded .wbt-rotator-cover {display:none;}
+
+.wbt-rotator-loader {display:block;position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;background:url("preload-sprite.png") center top no-repeat;pointer-events:none;}
+.wbt-rotator__loaded .wbt-rotator-loader {display:none;}
+
+/* Cursors*/
+.wbt-rotator__loaded.wbt-rotator__horizontal {cursor:w-resize;}
+.wbt-rotator__loaded.wbt-rotator__vertical {cursor:s-resize;}
+/*.wbt-rotator {*/
+    /*cursor:hand; *//* old IE */
+    /*cursor:pointer; *//* other browsers */
+    /*cursor:grab!important; *//* css3 cursor compatible */
+    /*cursor:-moz-grab; *//* mozilla */
+    /*cursor:-webkit-grab; *//* webkit */
+    /*cursor:url(openhand.cur), pointer!important; *//* other browsers css2.1 compatible */
+/*}*/
+/*.wbt-rotator__active {*/
+    /*cursor:hand;*/
+    /*cursor:pointer;*/
+    /*cursor:grabbing!important;*/
+    /*cursor:-moz-grabbing;*/
+    /*cursor:-webkit-grabbing;*/
+    /*cursor:url(closedhand.cur), pointer!important;*/
+/*}*/

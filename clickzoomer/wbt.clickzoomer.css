@@ -1,0 +1,9 @@
+.wbt-clickzoom-wrap {overflow:hidden;position:relative;}
+.wbt-clickzoom-image {}
+.wbt-clickzoom-image_zoomed {position:absolute;z-index:2;width:100%;height:100%;left:0;top:0;cursor:pointer;display:none;}
+.wbt-clickzoom-point {position:absolute;z-index:3;width:50px;height:50px;margin:5px 0 0 5px;border-radius:30px;cursor:pointer;opacity:0.6;}
+.wbt-clickzoom-point:hover {width:60px;height:60px;margin:0;-webkit-animation:200ms ease-in-out animateHover;}
+.wbt-clickzoom-point.wbt-clickzoom-point_animate {-webkit-animation:600ms ease-in-out animateShow;}
+.wbt-clickzoom-lens {width:100%;height:auto !important;}
+@-webkit-keyframes animateShow { from {width:0;height:0;margin:30px 0 0 30px;} 50% {width:60px;height:60px;margin:0;} to {width:50px;height:50px;margin:5px 0 0 5px;} }
+@-webkit-keyframes animateHover { from {width:50px;height:50px;margin:5px 0 0 5px;} to {width:60px;height:60px;margin:0;} }
