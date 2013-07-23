@@ -1,8 +1,17 @@
 /**
- * wbt.rotator.js v1.0.0
+ * wbt.rotator.js v1.0.2
  *
  * Licensed under the MIT license.
- * http://www.opensource.org/licenses/mit-license.php
+ * http://opensource.org/licenses/mit-license.php
+ *
+ * Dependencies: jQuery 1.7+
+ *
+ * Basic usage:
+ * $(".any-selector").wbtRotator({
+ *   frameSrc: "path/template/{{30}}.jpg"
+ * });
+ *
+ * For more instructions and examples, please visit http://wbtech.pro/blog/articles/rotator/
  *
  * Copyright 2012, WBTech
  * http://wbtech.pro/
