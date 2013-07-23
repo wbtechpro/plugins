@@ -35,28 +35,27 @@
         this.frameCount = this.cfg.frameSrc.length;
 
         if(this.cfg.showLoader) {
-            this.$loader = $("<span></span>").attr({"class": "wbt-rotator-loader"}).appendTo(this.$el);
+            this.$loader = $("<span>&#9654;</span>").attr({"class": "wbt-rotator-loader"}).appendTo(this.$el);
         }
 
-        if(this.cfg.frameCover) {
-            var self = this;
-            this.$cover = $("<img />")
-                .attr({
-                    "class": "wbt-rotator-cover",
-                    "src": this.cfg.frameCover,
-                    "alt": ""
-                })
-                .appendTo(this.$el)
-                .on("load", function(){
-                    self.frameSize = {"width": self.$cover.width(), "height": self.$cover.height()};
-                    self.$el.width(self.frameSize.width).height(self.frameSize.height);
-                });
+        if(!this.cfg.frameCover) {
+            this.cfg.frameCover = this.cfg.frameSrc[0];
         }
+        this.loadCover();
 
-        if(this.cfg.invertAxes) {
-            this.$el.addClass("wbt-rotator__vertical");
-        } else {
-            this.$el.addClass("wbt-rotator__horizontal");
+        if(this.cfg.rotateManual) {
+            if(this.cfg.cursor == "arrows") {
+                if(this.cfg.invertAxes) {
+                    this.$el.addClass("wbt-rotator__vertical");
+                } else {
+                    this.$el.addClass("wbt-rotator__horizontal");
+                }
+            } else if (this.cfg.cursor == "grab") {
+                this.$el.addClass("wbt-rotator__grab");
+            }
+
+
+
         }
 
         if(this.cfg.autoLoad) {
@@ -67,18 +66,20 @@
     }
 
     WBTRotator.prototype.defaults = {
-        showLoader: false,
-        frameCover: "",
+        showLoader: true,
+        frameCover: "", // if not present, first frame taken
         frameSrc: "",
         frameFirst: 0,
         leadingZero: true,
         autoLoad: true,
-        autoRotate: false,
-        autoRotateSpeed: 100, // milliseconds
-        invertAxes: true, // false: verticalx; true: horizontal
-        invertMouse: false,
-        invertAutoRotate: false,
-        enableMouseWheel: true
+        rotateAuto: false,
+        rotateAutoSpeed: 100, // milliseconds per frame
+        rotateManual: true, // disable keyboard and mouse for rotation
+        invertAxes: false, // false: horizontal; true: vertical
+        invertMouse: false, // false: counter-clockwise; true: clockwise
+        invertAutoRotate: false, // false: counter-clockwise; true: clockwise
+        enableMouseWheel: true,
+        cursor: "arrows"
         // TODO: User events support
     };
 
@@ -90,10 +91,13 @@
         if(this.cfg.enableMouseWheel){
             this.$el.on("mousewheel DOMMouseScroll", $.proxy(this.onScroll, this));
         }
-        if(this.cfg.autoRotate) {
+        if(this.cfg.rotateAuto) {
             this.$el.on("mouseenter", $.proxy(this.onPointerEnter, this));
             this.$el.on("mouseleave", $.proxy(this.onPointerLeave, this));
         }
+    };
+
+    WBTRotator.prototype.getCoverSrc = function() {
     };
 
     WBTRotator.prototype.getFrameSrc = function() {
@@ -116,9 +120,24 @@
         this.cfg.frameSrc = frameSrc;
     };
 
+    WBTRotator.prototype.loadCover = function() {
+        var self = this;
+        this.$cover = $("<img />")
+            .attr({
+                "class": "wbt-rotator-cover",
+                "src": this.cfg.frameCover,
+                "alt": ""
+            })
+            .appendTo(this.$el)
+            .on("load", function(){
+                self.frameSize = {"width": self.$cover.width(), "height": self.$cover.height()};
+                self.$el.width(self.frameSize.width).height(self.frameSize.height);
+            });
+    };
+
     WBTRotator.prototype.loadImages = function() {
         // Avoid double initialization
-        this.$el.off("click.wbt-rotator");
+        this.$el.off("click.wbt-rotator").addClass("wbt-rotator__loading");
 
         var self = this;
 
@@ -147,18 +166,17 @@
 
     WBTRotator.prototype.loadImagesAnimation = function() {
         if(this.cfg.showLoader) {
-            this.$loader.css("background-position", "0 " + (this.frameLoadedCount) * -40 + "px");
         }
     };
 
     WBTRotator.prototype.loadImagesComplete = function() {
-        this.$el.addClass("wbt-rotator__loaded");
+        this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
         this.$frames = this.$el.children(".wbt-rotator-image");
         this.$frameCurrent = this.$frames.eq(this.frameCurrent).addClass("wbt-rotator-image__active");
 
         this.registerEvents();
 
-        if(this.cfg.autoRotate) {
+        if(this.cfg.rotateAuto) {
             this.startAutoRotate();
         }
     };
@@ -167,7 +185,7 @@
         (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
         this.$el.addClass("wbt-rotator__active");
-        this.pointerPressed = true;
+        this.pointerPressed = true && this.cfg.rotateManual;
         this.pointerPosition.x = e.pageX;
         this.pointerPosition.y = e.pageY;
     };
@@ -190,6 +208,8 @@
                 this.changeFrame(e.pageX - this.pointerPosition.x);
             }
         }
+
+        // TODO: add momentum
     };
 
     WBTRotator.prototype.onPointerEnter = function() {
@@ -201,20 +221,20 @@
     };
 
     WBTRotator.prototype.onScroll = function(e, delta) {
-        e.preventDefault();
+        if(this.cfg.rotateManual) {
+            e.preventDefault();
 
-        var scrollUp;
-
-        if(undefined != e.wheelDelta) {
-            scrollUp = (e.wheelDelta > 0);
-        } else if(undefined != e.detail) {
-            scrollUp = (e.detail > 0);
-        } else {
-            scrollUp = (e.originalEvent.wheelDelta > 0);
+            var scrollUp;
+            if(undefined != e.wheelDelta) {
+                scrollUp = (e.wheelDelta > 0);
+            } else if(undefined != e.detail) {
+                scrollUp = (e.detail > 0);
+            } else {
+                scrollUp = (e.originalEvent.wheelDelta > 0);
+            }
+            // TODO: smoother movement
+            this.changeFrame(scrollUp ? this.frameCurrent++: this.frameCurrent--);
         }
-
-        // TODO: smoother movement
-        this.changeFrame(scrollUp ? this.frameCurrent++: this.frameCurrent--);
     };
 
     WBTRotator.prototype.changeFrame = function(newIndex) {
@@ -229,6 +249,7 @@
 
         // Rotate around total frame count
         newIndex %= this.frameCount;
+        // TODO: allow non-circular rotation, arc rotation
 
         this.$frameCurrent.removeClass("wbt-rotator-image__active");
         this.$frameCurrent = this.$frames.eq(newIndex);
@@ -240,9 +261,9 @@
 
         setInterval(function(){
             if(!self.pointerPressed) {
-                self.changeFrame(self.cfg.invertAutoRotate ? self.frameCurrent--: self.frameCurrentIndex++);
+                self.changeFrame(self.cfg.invertAutoRotate ? self.frameCurrent++: self.frameCurrent--);
             }
-        }, this.cfg.autoRotateSpeed);
+        }, this.cfg.rotateAutoSpeed);
     };
 
     WBTRotator.prototype.stopAutoRotate = function() {
