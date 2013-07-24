@@ -208,9 +208,9 @@
     };
 
     WBTRotator.prototype.onPointerMove = function(e) {
-        (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
-
         if(this.pointerPressed) {
+            (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
+
             var delta;
 
             if(this.cfg.invertAxes) {
