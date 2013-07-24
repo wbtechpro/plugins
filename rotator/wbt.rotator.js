@@ -1,5 +1,5 @@
 /**
- * wbt.rotator.js v1.0.2
+ * wbt.rotator.js v1.0.3
  *
  * Licensed under the MIT license.
  * http://opensource.org/licenses/mit-license.php
@@ -203,7 +203,7 @@
         if(this.pointerPressed) {
             this.$el.removeClass("wbt-rotator__active");
             this.pointerPressed = false;
-            this.frameCurrent = this.$frameCurrent.index(".wbt-rotator-image");
+            this.frameCurrent = this.$el.children(".wbt-rotator-image").index(this.$frameCurrent);
         }
     };
 
@@ -211,14 +211,27 @@
         (e.preventDefault) ? e.preventDefault() : e.returnValue = false;
 
         if(this.pointerPressed) {
-            if(this.cfg.invertAxes) {
-                this.changeFrame(e.pageY - this.pointerPosition.y);
-            } else {
-                this.changeFrame(e.pageX - this.pointerPosition.x);
-            }
-        }
+            var delta;
 
-        // TODO: add momentum
+            if(this.cfg.invertAxes) {
+                delta = e.pageY - this.pointerPosition.y;
+            } else {
+                delta = e.pageX - this.pointerPosition.x;
+            }
+
+            // Normalize
+            delta = Math.floor(delta * this.frameCount / (this.invertAxes ? this.frameSize.height : this.frameSize.width));
+
+            // Add current frame index
+            if(this.cfg.invertMouse) {
+                delta = this.frameCurrent - delta;
+            } else {
+                delta = this.frameCurrent + delta;
+            }
+
+            this.changeFrame(delta);
+            // TODO: add momentum
+        }
     };
 
     WBTRotator.prototype.onPointerEnter = function() {
@@ -241,23 +254,18 @@
             } else {
                 scrollUp = (e.originalEvent.wheelDelta > 0);
             }
-            // TODO: smoother movement
-            this.changeFrame(scrollUp ? this.frameCurrent++: this.frameCurrent--);
+
+            this.changeFrame(scrollUp ? ++this.frameCurrent: --this.frameCurrent);
         }
     };
 
     WBTRotator.prototype.changeFrame = function(newIndex) {
-        // Invert
-        newIndex = this.cfg.invertMouse ? -newIndex : newIndex;
-
-        // Normalize
-        newIndex = Math.floor(newIndex * this.frameCount / (this.invertAxes ? this.frameSize.height : this.frameSize.width));
-
-        // Add to current frame index
-        newIndex += this.frameCurrent;
+        // Avoid negative values before rotation by adding base
+        newIndex += this.frameCount;
 
         // Rotate around total frame count
         newIndex %= this.frameCount;
+
         // TODO: allow non-circular rotation, arc rotation
 
         this.$frameCurrent.removeClass("wbt-rotator-image__active");
@@ -270,7 +278,7 @@
 
         setInterval(function(){
             if(!self.pointerPressed) {
-                self.changeFrame(self.cfg.invertAutoRotate ? self.frameCurrent++: self.frameCurrent--);
+                self.changeFrame(self.cfg.invertAutoRotate ? ++self.frameCurrent: --self.frameCurrent);
             }
         }, this.cfg.rotateAutoSpeed);
     };
