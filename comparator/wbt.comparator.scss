@@ -1,0 +1,14 @@
+.wbt-comparator {position:relative;display:inline-block;}
+.wbt-comparator__vertical {cursor:ns-resize;}
+.wbt-comparator__horizontal {cursor:ew-resize;}
+.wbt-comparator_wrap__background {position:relative;}
+.wbt-comparator_wrap__overlay {position:absolute;top:0;left:0;overflow:hidden;}
+.wbt-comparator__horizontal .wbt-comparator_wrap__overlay {height:100%;border-right:1px solid rgba(255,255,255,.5);}
+.wbt-comparator__vertical .wbt-comparator_wrap__overlay {width:100%;border-bottom:1px solid rgba(255,255,255,.5);}
+.wbt-comparator_image {display:block;margin:0;border:none;}
+.wbt-comparator__horizontal .wbt-comparator_image {height:100%;}
+.wbt-comparator__vertical .wbt-comparator_image {width:100%;}
+@keyframes resetWidth {to {width:50%;}}
+@keyframes resetHeight {to {height:50%;}}
+.wbt-comparator_reset__horizontal {animation:resetWidth 500ms forwards;}
+.wbt-comparator_reset__vertical {animation:resetHeight 500ms forwards;}
