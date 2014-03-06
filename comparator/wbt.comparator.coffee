@@ -1,5 +1,5 @@
 ###
-* wbt.rotator.js v1.0.3
+* wbt.comparator.js v1.0.0
 *
 * Licensed under the MIT license.
 * http://opensource.org/licenses/mit-license.php
@@ -7,13 +7,16 @@
 * Dependencies: jQuery 1.7+
 *
 * Basic usage:
-* $(".any-selector").wbtRotator({
-*   frameSrc: "path/template/{{30}}.jpg"
+* $(".any-selector").wbtComparator({
+*   src: [
+      "path/to/first/image.jpg",
+      "path/to/second/image.jpg"
+    ]
 * });
 *
-* For more instructions and examples, please visit http://wbtech.pro/blog/articles/rotator/
+* For more instructions and examples, please visit http://wbtech.pro/blog/comparator/
 *
-* Copyright 2012, WBTech
+* Copyright 2014, WBTech
 * http://wbtech.pro/
 ###
 WBTComparator = ($this, params)->
@@ -81,8 +84,8 @@ WBTComparator::imagesInitIfVisible = (e)->
   self = e.data["this"]
   return if self.isInitialized
   rect = self.$el[0].getBoundingClientRect()
-#  if rect.top >= 0 and rect.left >= 0 and rect.bottom <= $(window).height() and rect.right <= $(window).width()
-  self.imagesInit()
+  if rect.top >= 0 and rect.top <= $(window).height() or rect.bottom >= 0 and rect.bottom <= $(window).height()
+    self.imagesInit()
 
 $.fn.wbtComparator = (params)->
   new WBTComparator(this, params)
