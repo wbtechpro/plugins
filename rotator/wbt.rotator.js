@@ -27,6 +27,7 @@ http://wbtech.pro/
       this.$el = $el.addClass("wbt-rotator");
       this.$frames = $();
       this.$frameCurrent = $();
+      this.framePrevious = 0;
       this.frameCurrent = this.cfg.frameFirst;
       this.frameCount = 0;
       this.frameLoadedCount = 0;
@@ -34,6 +35,10 @@ http://wbtech.pro/
         width: 0,
         height: 0
       };
+      this.paths = [];
+      this.pathCount = 0;
+      this.pathLoadedCount = 0;
+      this.pathRoot = null;
       this.pointerPressed = false;
       this.pointerPosition = {
         x: 0,
@@ -48,7 +53,11 @@ http://wbtech.pro/
       if (typeof this.cfg.frameSrc === "string") {
         this.getFrameSrc();
       }
+      if (typeof this.cfg.pathSrc === "string") {
+        this.getPathSrc();
+      }
       this.frameCount = this.cfg.frameSrc.length;
+      this.pathCount = this.cfg.pathSrc.length;
       if (this.cfg.showLoader) {
         this.$loader = $("<span>&#9654;</span>").attr({
           "class": "wbt-rotator-loader"
@@ -71,15 +80,23 @@ http://wbtech.pro/
           }
         }
       }
+      this.$el.on("click.wbt-rotator", $.proxy(this.loadImages, this));
+      this.$mask = $("<div></div>").attr({
+        "class": "wbt-rotator-mask"
+      }).appendTo(this.$el);
+      this.maskPaper = Raphael(this.$mask[0], "100%", "100%");
       if (this.cfg.autoLoad) {
         this.loadImages();
       }
-      this.$el.on("click.wbt-rotator", $.proxy(this.loadImages, this));
+      if (this.cfg.autoLoad) {
+        this.loadPaths();
+      }
     };
     WBTRotator.prototype.defaults = {
       showLoader: true,
       frameCover: "",
       frameSrc: "",
+      pathSrc: "",
       frameFirst: 0,
       leadingZero: true,
       autoLoad: true,
@@ -125,51 +142,98 @@ http://wbtech.pro/
       }
       this.cfg.frameSrc = frameSrc;
     };
+    WBTRotator.prototype.getPathSrc = function() {
+      var i, pathCount, pathCountLength, pathIndex, pathIndexLength, pathSrc;
+      pathCount = parseInt(this.cfg.pathSrc.replace(/.*{{|}}.*/g, ""));
+      pathCountLength = ("" + pathCount).length;
+      pathIndex = 0;
+      pathIndexLength = 0;
+      pathSrc = [];
+      i = 0;
+      while (i < pathCount) {
+        pathIndex = i;
+        if (this.cfg.leadingZero) {
+          while (pathIndexLength = ("" + pathIndex).length < pathCountLength) {
+            pathIndex = "0" + pathIndex;
+          }
+        }
+        pathSrc.push(this.cfg.pathSrc.replace(/{{.*}}/, pathIndex));
+        i++;
+      }
+      this.cfg.pathSrc = pathSrc;
+    };
     WBTRotator.prototype.loadCover = function() {
-      var self;
-      self = this;
       this.$cover = $("<img />").attr({
         "class": "wbt-rotator-cover",
         src: this.cfg.frameCover,
         alt: ""
-      }).appendTo(this.$el).on("load", function() {
-        self.frameSize = {
-          width: self.$cover.width(),
-          height: self.$cover.height()
+      }).appendTo(this.$el).on("load", (function(_this) {
+        return function() {
+          _this.frameSize = {
+            width: _this.$cover.width(),
+            height: _this.$cover.height()
+          };
+          _this.$el.width(_this.frameSize.width).height(_this.frameSize.height);
         };
-        self.$el.width(self.frameSize.width).height(self.frameSize.height);
-      });
+      })(this));
     };
     WBTRotator.prototype.loadImages = function() {
-      var i, self;
+      var i, _i, _ref;
       this.$el.off("click.wbt-rotator").addClass("wbt-rotator__loading");
-      self = this;
-      i = 0;
-      while (i < this.frameCount) {
+      for (i = _i = 0, _ref = this.frameCount; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
         $("<img />").attr({
           "class": "wbt-rotator-image",
           src: this.cfg.frameSrc[i],
           alt: ""
-        }).appendTo(this.$el).on("load", function(e) {
-          var $this;
-          self.frameLoadedCount++;
-          self.loadImagesAnimation();
-          if (self.frameLoadedCount === 1 && !self.frameCover) {
-            $this = $(this);
-            self.frameSize = {
-              width: $this.width(),
-              height: $this.height()
-            };
-            self.$el.width(self.frameSize.width).height(self.frameSize.height);
-          }
-          if (self.frameLoadedCount === self.frameCount) {
-            self.loadImagesComplete();
-          }
-        });
-        i++;
+        }).appendTo(this.$el).on("load", (function(_this) {
+          return function(e) {
+            var $this;
+            _this.frameLoadedCount++;
+            if (_this.frameLoadedCount === 1 && !_this.frameCover) {
+              $this = $(e.target);
+              _this.frameSize = {
+                width: $this.width(),
+                height: $this.height()
+              };
+              _this.$el.width(_this.frameSize.width).height(_this.frameSize.height);
+            }
+            if (_this.frameLoadedCount === _this.frameCount) {
+              _this.loadImagesComplete();
+            }
+          };
+        })(this));
       }
     };
-    WBTRotator.prototype.loadImagesAnimation = function() {};
+    WBTRotator.prototype.loadPaths = function() {
+      var i, _i, _ref;
+      this.$el.off("click.wbt-rotator").addClass("wbt-rotator__loading");
+      for (i = _i = 0, _ref = this.pathCount; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        $.get(this.cfg.pathSrc[i], (function(_this) {
+          return function(el) {
+            var pathsSet;
+            _this.pathLoadedCount++;
+            pathsSet = _this.maskPaper.set();
+            $(el).find("path").each(function(index, el) {
+              var pathNew;
+              pathNew = _this.maskPaper.path($(el).attr("d"));
+              pathNew.transform("s.25,.25,0,0");
+              pathNew.attr({
+                fill: "rgba(0,255,0,.5)",
+                cursor: "pointer"
+              });
+              return pathsSet.push(pathNew);
+            });
+            pathsSet.forEach(function(el) {
+              return el.hide();
+            });
+            _this.paths.push(pathsSet);
+            if (_this.pathLoadedCount === _this.pathCount) {
+              return _this.loadPathsComplete();
+            }
+          };
+        })(this));
+      }
+    };
     WBTRotator.prototype.loadImagesComplete = function() {
       this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
       this.$frames = this.$el.children(".wbt-rotator-image");
@@ -178,6 +242,9 @@ http://wbtech.pro/
       if (this.cfg.rotateAuto) {
         this.startAutoRotate();
       }
+    };
+    WBTRotator.prototype.loadPathsComplete = function() {
+      console.log("paths done", this.paths);
     };
     WBTRotator.prototype.onPointerDown = function(e) {
       if (e.preventDefault) {
@@ -217,7 +284,8 @@ http://wbtech.pro/
         } else {
           delta = this.frameCurrent + delta;
         }
-        this.changeFrame(delta);
+        this.changeFrame(delta, this.frameCurrent);
+        this.changePath(delta, this.frameCurrent);
       }
     };
     WBTRotator.prototype.onPointerEnter = function() {};
@@ -234,24 +302,53 @@ http://wbtech.pro/
         } else {
           scrollUp = e.originalEvent.wheelDelta > 0;
         }
-        this.changeFrame((scrollUp ? ++this.frameCurrent : --this.frameCurrent));
+        this.frameCurrent %= this.frameCount;
+        if (scrollUp) {
+          ++this.frameCurrent;
+        } else {
+          --this.frameCurrent;
+        }
+        this.changeFrame(this.frameCurrent);
+        this.changePath(this.frameCurrent);
       }
     };
     WBTRotator.prototype.changeFrame = function(newIndex) {
+      newIndex %= this.frameCount;
       newIndex += this.frameCount;
       newIndex %= this.frameCount;
       this.$frameCurrent.removeClass("wbt-rotator-image__active");
       this.$frameCurrent = this.$frames.eq(newIndex);
       this.$frameCurrent.addClass("wbt-rotator-image__active");
     };
+    WBTRotator.prototype.changePath = function(newIndex) {
+      newIndex %= this.frameCount;
+      newIndex += this.frameCount;
+      newIndex %= this.frameCount;
+      this.paths[this.framePrevious].forEach(function(el) {
+        return el.hide();
+      });
+      this.paths[newIndex].forEach((function(_this) {
+        return function(el) {
+          el.show();
+          return el.attr("fill", "url(" + _this.$frameCurrent.attr("src") + ")");
+        };
+      })(this));
+      this.framePrevious = newIndex;
+    };
     WBTRotator.prototype.startAutoRotate = function() {
-      var self;
-      self = this;
-      setInterval((function() {
-        if (!self.pointerPressed) {
-          self.changeFrame((self.cfg.invertAutoRotate ? ++self.frameCurrent : --self.frameCurrent));
-        }
-      }), this.cfg.rotateAutoSpeed);
+      setInterval(((function(_this) {
+        return function() {
+          if (_this.cfg.invertAutoRotate) {
+            ++_this.frameCurrent;
+          } else {
+            --_this.frameCurrent;
+          }
+          if (!_this.pointerPressed) {
+            _this.changeFrame(_this.frameCurrent);
+            _this.changePath(_this.frameCurrent);
+          }
+        };
+      })(this)), this.cfg.rotateAutoSpeed);
     };
     WBTRotator.prototype.stopAutoRotate = function() {};
     $.wbtError = function(error) {

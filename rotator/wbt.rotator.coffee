@@ -22,12 +22,17 @@ http://wbtech.pro/
     @$el = $el.addClass("wbt-rotator")
     @$frames = $()
     @$frameCurrent = $()
+    @framePrevious = 0
     @frameCurrent = @cfg.frameFirst
     @frameCount = 0
     @frameLoadedCount = 0
     @frameSize =
       width: 0
       height: 0
+    @paths = [] # TODO Refactor
+    @pathCount = 0 # TODO Refactor
+    @pathLoadedCount = 0 # TODO Refactor
+    @pathRoot = null # TODO Remove
     @pointerPressed = false
     @pointerPosition =
       x: 0
@@ -37,8 +42,10 @@ http://wbtech.pro/
     return $.wbtError("Specify 'frameSrc' in $().wbtRotator() call.") if not @cfg.frameSrc or @cfg.frameSrc.length is 0
 
     # Dealing with template string
-    @getFrameSrc()  if typeof @cfg.frameSrc is "string"
+    @getFrameSrc() if typeof @cfg.frameSrc is "string"
+    @getPathSrc() if typeof @cfg.pathSrc is "string"
     @frameCount = @cfg.frameSrc.length
+    @pathCount = @cfg.pathSrc.length
     @$loader = $("<span>&#9654;</span>").attr(class: "wbt-rotator-loader").appendTo(@$el)  if @cfg.showLoader
     @cfg.frameCover = @cfg.frameSrc[0]  unless @cfg.frameCover
     @loadCover()
@@ -49,14 +56,20 @@ http://wbtech.pro/
         else
           @$el.addClass "wbt-rotator__horizontal"
       else @$el.addClass "wbt-rotator__grab"  if @cfg.cursor is "grab"
-    @loadImages()  if @cfg.autoLoad
     @$el.on "click.wbt-rotator", $.proxy(@loadImages, this)
+
+    @$mask = $("<div></div>").attr("class": "wbt-rotator-mask").appendTo(@$el)
+    @maskPaper = Raphael(@$mask[0], "100%", "100%")
+
+    @loadImages() if @cfg.autoLoad
+    @loadPaths() if @cfg.autoLoad
     return
 
   WBTRotator::defaults =
     showLoader: true
     frameCover: "" # if not present, first frame taken
     frameSrc: ""
+    pathSrc: ""
     frameFirst: 0
     leadingZero: true
     autoLoad: true
@@ -95,18 +108,34 @@ http://wbtech.pro/
       frameSrc.push @cfg.frameSrc.replace(/{{.*}}/, frameIndex)
       i++
     @cfg.frameSrc = frameSrc
+#    console.log frameSrc
+    return
+
+  WBTRotator::getPathSrc = ->
+    pathCount = parseInt(@cfg.pathSrc.replace(/.*{{|}}.*/g, "")) # Remove everything except contents between {{ and }}
+    pathCountLength = ("" + pathCount).length
+    pathIndex = 0
+    pathIndexLength = 0
+    pathSrc = []
+    i = 0
+    while i < pathCount
+      pathIndex = i
+      pathIndex = "0" + pathIndex  while pathIndexLength = ("" + pathIndex).length < pathCountLength  if @cfg.leadingZero
+      pathSrc.push @cfg.pathSrc.replace(/{{.*}}/, pathIndex)
+      i++
+    @cfg.pathSrc = pathSrc
+#    console.log pathSrc
     return
 
   WBTRotator::loadCover = ->
-    self = this
     @$cover = $("<img />")
     .attr(class: "wbt-rotator-cover", src: @cfg.frameCover, alt: "")
     .appendTo(@$el)
-    .on("load", ->
-      self.frameSize =
-        width: self.$cover.width()
-        height: self.$cover.height()
-      self.$el.width(self.frameSize.width).height self.frameSize.height
+    .on("load", =>
+      @frameSize =
+        width: @$cover.width()
+        height: @$cover.height()
+      @$el.width(@frameSize.width).height @frameSize.height
       return
     )
     return
@@ -114,33 +143,48 @@ http://wbtech.pro/
   WBTRotator::loadImages = ->
     # Avoid double initialization
     @$el.off("click.wbt-rotator").addClass "wbt-rotator__loading"
-    self = this
-    i = 0
 
-    while i < @frameCount
+    for i in [0..@frameCount]
       $("<img />").attr(
         class: "wbt-rotator-image"
         src: @cfg.frameSrc[i]
         alt: ""
-      ).appendTo(@$el).on "load", (e) ->
-        self.frameLoadedCount++
-        self.loadImagesAnimation()
-        if self.frameLoadedCount is 1 and not self.frameCover
-          $this = $(this)
-          self.frameSize =
+      ).appendTo(@$el).on "load", (e) =>
+        @frameLoadedCount++
+        if @frameLoadedCount is 1 and not @frameCover
+          $this = $(e.target)
+          @frameSize =
             width: $this.width()
             height: $this.height()
-
-          self.$el.width(self.frameSize.width).height self.frameSize.height
-        self.loadImagesComplete()  if self.frameLoadedCount is self.frameCount
+          @$el.width(@frameSize.width).height @frameSize.height
+        @loadImagesComplete()  if @frameLoadedCount is @frameCount
         return
-
-      i++
     return
 
-  WBTRotator::loadImagesAnimation = ->
-    #        if(this.cfg.showLoader) {
-    #        }
+  WBTRotator::loadPaths = ->
+    # Avoid double initialization
+    @$el.off("click.wbt-rotator").addClass "wbt-rotator__loading"
+
+#    for i in [0..4]
+    for i in [0..@pathCount]
+      $.get @cfg.pathSrc[i], (el)=>
+        @pathLoadedCount++
+
+        pathsSet = @maskPaper.set()
+        $(el).find("path").each (index, el)=>
+          pathNew = @maskPaper.path $(el).attr("d")
+          pathNew.transform("s.25,.25,0,0")
+          pathNew.attr
+            fill:"rgba(0,255,0,.5)"
+            cursor:"pointer"
+          pathsSet.push pathNew
+
+        pathsSet.forEach (el)->
+          el.hide()
+
+        @paths.push pathsSet
+        @loadPathsComplete()  if @pathLoadedCount is @pathCount
+    return
 
   WBTRotator::loadImagesComplete = ->
     @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
@@ -148,6 +192,11 @@ http://wbtech.pro/
     @$frameCurrent = @$frames.eq(@frameCurrent).addClass("wbt-rotator-image__active")
     @registerEvents()
     @startAutoRotate()  if @cfg.rotateAuto
+    return
+
+  WBTRotator::loadPathsComplete = ->
+#    TODO sync with images loading
+    console.log "paths done", @paths
     return
 
   WBTRotator::onPointerDown = (e) ->
@@ -182,14 +231,14 @@ http://wbtech.pro/
         delta = @frameCurrent - delta
       else
         delta = @frameCurrent + delta
-      @changeFrame delta
-    return
 
+      @changeFrame delta, @frameCurrent
+      @changePath delta, @frameCurrent
+    return
 
   # TODO: add momentum
   WBTRotator::onPointerEnter = ->
     #        this.stopAutoRotate();
-
   WBTRotator::onPointerLeave = ->
     #        this.startAutoRotate();
 
@@ -203,14 +252,17 @@ http://wbtech.pro/
         scrollUp = (e.detail > 0)
       else
         scrollUp = (e.originalEvent.wheelDelta > 0)
-      @changeFrame (if scrollUp then ++@frameCurrent else --@frameCurrent)
+
+      @frameCurrent %= @frameCount
+      if scrollUp then ++@frameCurrent else --@frameCurrent
+      @changeFrame @frameCurrent
+      @changePath @frameCurrent
     return
 
   WBTRotator::changeFrame = (newIndex) ->
-    # Avoid negative values before rotation by adding base
+    # Avoid negative values before rotation by adding base and Rotate around total frame count
+    newIndex %= @frameCount
     newIndex += @frameCount
-
-    # Rotate around total frame count
     newIndex %= @frameCount
 
     # TODO: allow non-circular rotation, arc rotation
@@ -219,10 +271,27 @@ http://wbtech.pro/
     @$frameCurrent.addClass "wbt-rotator-image__active"
     return
 
+  WBTRotator::changePath = (newIndex) ->
+    # Avoid negative values before rotation by adding base and Rotate around total frame count
+    newIndex %= @frameCount
+    newIndex += @frameCount
+    newIndex %= @frameCount
+#    console.log "new: #{newIndex}, current: #{@frameCurrent}"
+    @paths[@framePrevious].forEach (el)->
+      el.hide()
+    @paths[newIndex].forEach (el)=>
+      el.show()
+      el.attr("fill", "url(" + @$frameCurrent.attr("src") + ")")
+
+    @framePrevious = newIndex
+    return
+
   WBTRotator::startAutoRotate = ->
-    self = this
-    setInterval (->
-      self.changeFrame (if self.cfg.invertAutoRotate then ++self.frameCurrent else --self.frameCurrent)  unless self.pointerPressed
+    setInterval (=>
+      if @cfg.invertAutoRotate then ++@frameCurrent else --@frameCurrent
+      unless @pointerPressed
+        @changeFrame @frameCurrent
+        @changePath @frameCurrent
       return
     ), @cfg.rotateAutoSpeed
     return
