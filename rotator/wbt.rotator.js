@@ -214,16 +214,15 @@ http://wbtech.pro/
           imageNew = _this.maskPaper.image(_this.cfg.frameSrc[i], 0, 0);
           imageNew.attr("display", "none");
           pathsSet = _this.maskPaper.g().attr({
-            display: "none"
+            display: "none",
+            fill: "rgba(0,255,0,.5)",
+            fill: "transparent",
+            cursor: "pointer"
           });
           $(el).find("path").each(function(index, el) {
             var pathNew;
             pathNew = _this.maskPaper.path($(el).attr("d"));
             pathNew.transform("s.25,.25,0,0");
-            pathNew.attr({
-              fill: "transparent",
-              cursor: "pointer"
-            });
             pathNew.click(function() {
               return self.$mask.toggleClass("wbt-rotator-mask__active");
             });

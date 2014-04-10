@@ -174,14 +174,14 @@ http://wbtech.pro/
       imageNew = @maskPaper.image(@cfg.frameSrc[i], 0, 0)
       imageNew.attr("display", "none")
 
-      pathsSet = @maskPaper.g().attr(display: "none")
+      pathsSet = @maskPaper.g().attr
+        display: "none"
+        fill:"rgba(0,255,0,.5)"
+        fill: "transparent"
+        cursor: "pointer"
       $(el).find("path").each (index, el)=>
         pathNew = @maskPaper.path $(el).attr("d")
         pathNew.transform("s.25,.25,0,0")
-        pathNew.attr
-#          fill:"rgba(0,255,0,.5)"
-          fill: "transparent"
-          cursor: "pointer"
         pathNew.click ->
           self.$mask.toggleClass("wbt-rotator-mask__active")
         pathsSet.add pathNew
