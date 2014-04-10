@@ -29,6 +29,7 @@ http://wbtech.pro/
     @frameSize =
       width: 0
       height: 0
+    @masks = [] # TODO Refactor
     @paths = [] # TODO Refactor
     @pathCount = 0 # TODO Refactor
     @pathLoadedCount = 0 # TODO Refactor
@@ -59,10 +60,10 @@ http://wbtech.pro/
     @$el.on "click.wbt-rotator", $.proxy(@loadImages, this)
 
     @$mask = $("<div></div>").attr("class": "wbt-rotator-mask").appendTo(@$el)
-    @maskPaper = Raphael(@$mask[0], "100%", "100%")
+    @maskPaper = Snap()
+    @$mask.append(@maskPaper.node)
 
     @loadImages() if @cfg.autoLoad
-    @loadPaths() if @cfg.autoLoad
     return
 
   WBTRotator::defaults =
@@ -87,7 +88,8 @@ http://wbtech.pro/
     @$el[0].addEventListener (if $.wbtIsTouch() then "touchstart" else "mousedown"), $.proxy(@onPointerDown, this)
     document.addEventListener (if $.wbtIsTouch() then "touchend" else "mouseup"), $.proxy(@onPointerUp, this)
     document.addEventListener (if $.wbtIsTouch() then "touchmove" else "mousemove"), $.proxy(@onPointerMove, this)
-    @$el.on "mousewheel DOMMouseScroll", $.proxy(@onScroll, this)  if @cfg.enableMouseWheel
+    if @cfg.enableMouseWheel
+      @$el.on "mousewheel DOMMouseScroll", $.proxy(@onScroll, this)
     if @cfg.rotateAuto
       @$el.on "mouseenter", $.proxy(@onPointerEnter, this)
       @$el.on "mouseleave", $.proxy(@onPointerLeave, this)
@@ -108,7 +110,6 @@ http://wbtech.pro/
       frameSrc.push @cfg.frameSrc.replace(/{{.*}}/, frameIndex)
       i++
     @cfg.frameSrc = frameSrc
-#    console.log frameSrc
     return
 
   WBTRotator::getPathSrc = ->
@@ -124,7 +125,6 @@ http://wbtech.pro/
       pathSrc.push @cfg.pathSrc.replace(/{{.*}}/, pathIndex)
       i++
     @cfg.pathSrc = pathSrc
-#    console.log pathSrc
     return
 
   WBTRotator::loadCover = ->
@@ -132,12 +132,12 @@ http://wbtech.pro/
     .attr(class: "wbt-rotator-cover", src: @cfg.frameCover, alt: "")
     .appendTo(@$el)
     .on("load", =>
-      @frameSize =
-        width: @$cover.width()
-        height: @$cover.height()
-      @$el.width(@frameSize.width).height @frameSize.height
-      return
-    )
+        @frameSize =
+          width: @$cover.width()
+          height: @$cover.height()
+        @$el.width(@frameSize.width).height @frameSize.height
+        return
+      )
     return
 
   WBTRotator::loadImages = ->
@@ -157,46 +157,61 @@ http://wbtech.pro/
             width: $this.width()
             height: $this.height()
           @$el.width(@frameSize.width).height @frameSize.height
-        @loadImagesComplete()  if @frameLoadedCount is @frameCount
+        if @frameLoadedCount is @frameCount
+          @loadImagesComplete()
         return
     return
 
-  WBTRotator::loadPaths = ->
+  WBTRotator::loadPaths = (i)->
     # Avoid double initialization
     @$el.off("click.wbt-rotator").addClass "wbt-rotator__loading"
 
-#    for i in [0..4]
-    for i in [0..@pathCount]
-      $.get @cfg.pathSrc[i], (el)=>
-        @pathLoadedCount++
+    self = this
 
-        pathsSet = @maskPaper.set()
-        $(el).find("path").each (index, el)=>
-          pathNew = @maskPaper.path $(el).attr("d")
-          pathNew.transform("s.25,.25,0,0")
-          pathNew.attr
-            fill:"rgba(0,255,0,.5)"
-            cursor:"pointer"
-          pathsSet.push pathNew
+    $.get @cfg.pathSrc[i], (el)=>
+      @pathLoadedCount++
 
-        pathsSet.forEach (el)->
-          el.hide()
+      imageNew = @maskPaper.image(@cfg.frameSrc[i], 0, 0)
+      imageNew.attr("display", "none")
 
-        @paths.push pathsSet
-        @loadPathsComplete()  if @pathLoadedCount is @pathCount
+      pathsSet = @maskPaper.g().attr(display: "none")
+      $(el).find("path").each (index, el)=>
+        pathNew = @maskPaper.path $(el).attr("d")
+        pathNew.transform("s.25,.25,0,0")
+        pathNew.attr
+#          fill:"rgba(0,255,0,.5)"
+          fill: "transparent"
+          cursor: "pointer"
+        pathNew.click ->
+          self.$mask.toggleClass("wbt-rotator-mask__active")
+        pathsSet.add pathNew
+        pathsSet.data("group", "testgroup")
+        pathsSet.data("index", i)
+
+      @paths.push pathsSet
+
+      imageNew.attr("mask", pathsSet.clone().attr(fill: "#fff", display: ""))
+      @masks.push imageNew
+
+      if @pathLoadedCount is @pathCount
+        @loadPathsComplete()
+      else
+        @loadPaths(++i)
     return
 
   WBTRotator::loadImagesComplete = ->
-    @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
-    @$frames = @$el.children(".wbt-rotator-image")
-    @$frameCurrent = @$frames.eq(@frameCurrent).addClass("wbt-rotator-image__active")
-    @registerEvents()
-    @startAutoRotate()  if @cfg.rotateAuto
+    @loadPaths(0)
     return
 
   WBTRotator::loadPathsComplete = ->
 #    TODO sync with images loading
-    console.log "paths done", @paths
+    @$frames = @$el.children(".wbt-rotator-image")
+    @changeFrame @frameCurrent
+    @changePath @frameCurrent
+
+    @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
+    @registerEvents()
+    @startAutoRotate()  if @cfg.rotateAuto
     return
 
   WBTRotator::onPointerDown = (e) ->
@@ -269,6 +284,9 @@ http://wbtech.pro/
     @$frameCurrent.removeClass "wbt-rotator-image__active"
     @$frameCurrent = @$frames.eq(newIndex)
     @$frameCurrent.addClass "wbt-rotator-image__active"
+
+    @masks[@framePrevious].attr "display": "none"
+    @masks[newIndex].attr "display": ""
     return
 
   WBTRotator::changePath = (newIndex) ->
@@ -276,12 +294,8 @@ http://wbtech.pro/
     newIndex %= @frameCount
     newIndex += @frameCount
     newIndex %= @frameCount
-#    console.log "new: #{newIndex}, current: #{@frameCurrent}"
-    @paths[@framePrevious].forEach (el)->
-      el.hide()
-    @paths[newIndex].forEach (el)=>
-      el.show()
-      el.attr("fill", "url(" + @$frameCurrent.attr("src") + ")")
+    @paths[@framePrevious].attr(display: "none")
+    @paths[newIndex].attr(display: "")
 
     @framePrevious = newIndex
     return

@@ -1,14 +1,14 @@
 .wbt-rotator {overflow:hidden;position:relative;cursor:pointer;margin:20px 0;background-color:#fff;box-shadow:0 0 20px rgba(0,0,0,0.5);-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
-.wbt-rotator-image {display:none;}
+.wbt-rotator-image {display:none;position:relative;z-index:1;}
 .wbt-rotator-image__active {display:block;}
-
 .wbt-rotator-cover {display:block;opacity:0.5;}
 .wbt-rotator__loaded .wbt-rotator-cover {display:none;}
 
-.wbt-rotator-loader {display:block;position:absolute;z-index:2;left:50%;top:50%;width:32px;height:32px;margin:-16px 0 0 -16px;color:#333;color:rgba(50,50,50,0.8);text-align:center;line-height:32px;font-size:32px;text-shadow:0 0 20px #fff;pointer-events:none;overflow:hidden;}
+.wbt-rotator-loader {display:block;position:absolute;z-index:3;left:50%;top:50%;width:32px;height:32px;margin:-16px 0 0 -16px;color:#333;color:rgba(50,50,50,0.8);text-align:center;line-height:32px;font-size:32px;text-shadow:0 0 20px #fff;pointer-events:none;overflow:hidden;}
 .wbt-rotator__loading .wbt-rotator-loader {background:url("loader.gif") center center no-repeat;text-indent:-100em;}
 .wbt-rotator__loaded .wbt-rotator-loader {display:none;}
-.wbt-rotator-mask {position:absolute;z-index:1;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.5);}
+.wbt-rotator-mask {position:absolute;z-index:2;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.0);}
+.wbt-rotator-mask__active {background-color:rgba(0,0,0,.5);}
 
 /* Cursors*/
 .wbt-rotator__loaded {cursor:default;}

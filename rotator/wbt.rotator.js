@@ -35,6 +35,7 @@ http://wbtech.pro/
         width: 0,
         height: 0
       };
+      this.masks = [];
       this.paths = [];
       this.pathCount = 0;
       this.pathLoadedCount = 0;
@@ -84,12 +85,10 @@ http://wbtech.pro/
       this.$mask = $("<div></div>").attr({
         "class": "wbt-rotator-mask"
       }).appendTo(this.$el);
-      this.maskPaper = Raphael(this.$mask[0], "100%", "100%");
+      this.maskPaper = Snap();
+      this.$mask.append(this.maskPaper.node);
       if (this.cfg.autoLoad) {
         this.loadImages();
-      }
-      if (this.cfg.autoLoad) {
-        this.loadPaths();
       }
     };
     WBTRotator.prototype.defaults = {
@@ -204,47 +203,60 @@ http://wbtech.pro/
         })(this));
       }
     };
-    WBTRotator.prototype.loadPaths = function() {
-      var i, _i, _ref;
+    WBTRotator.prototype.loadPaths = function(i) {
+      var self;
       this.$el.off("click.wbt-rotator").addClass("wbt-rotator__loading");
-      for (i = _i = 0, _ref = this.pathCount; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        $.get(this.cfg.pathSrc[i], (function(_this) {
-          return function(el) {
-            var pathsSet;
-            _this.pathLoadedCount++;
-            pathsSet = _this.maskPaper.set();
-            $(el).find("path").each(function(index, el) {
-              var pathNew;
-              pathNew = _this.maskPaper.path($(el).attr("d"));
-              pathNew.transform("s.25,.25,0,0");
-              pathNew.attr({
-                fill: "rgba(0,255,0,.5)",
-                cursor: "pointer"
-              });
-              return pathsSet.push(pathNew);
+      self = this;
+      $.get(this.cfg.pathSrc[i], (function(_this) {
+        return function(el) {
+          var imageNew, pathsSet;
+          _this.pathLoadedCount++;
+          imageNew = _this.maskPaper.image(_this.cfg.frameSrc[i], 0, 0);
+          imageNew.attr("display", "none");
+          pathsSet = _this.maskPaper.g().attr({
+            display: "none"
+          });
+          $(el).find("path").each(function(index, el) {
+            var pathNew;
+            pathNew = _this.maskPaper.path($(el).attr("d"));
+            pathNew.transform("s.25,.25,0,0");
+            pathNew.attr({
+              fill: "transparent",
+              cursor: "pointer"
             });
-            pathsSet.forEach(function(el) {
-              return el.hide();
+            pathNew.click(function() {
+              return self.$mask.toggleClass("wbt-rotator-mask__active");
             });
-            _this.paths.push(pathsSet);
-            if (_this.pathLoadedCount === _this.pathCount) {
-              return _this.loadPathsComplete();
-            }
-          };
-        })(this));
-      }
+            pathsSet.add(pathNew);
+            pathsSet.data("group", "testgroup");
+            return pathsSet.data("index", i);
+          });
+          _this.paths.push(pathsSet);
+          imageNew.attr("mask", pathsSet.clone().attr({
+            fill: "#fff",
+            display: ""
+          }));
+          _this.masks.push(imageNew);
+          if (_this.pathLoadedCount === _this.pathCount) {
+            return _this.loadPathsComplete();
+          } else {
+            return _this.loadPaths(++i);
+          }
+        };
+      })(this));
     };
     WBTRotator.prototype.loadImagesComplete = function() {
-      this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
+      this.loadPaths(0);
+    };
+    WBTRotator.prototype.loadPathsComplete = function() {
       this.$frames = this.$el.children(".wbt-rotator-image");
-      this.$frameCurrent = this.$frames.eq(this.frameCurrent).addClass("wbt-rotator-image__active");
+      this.changeFrame(this.frameCurrent);
+      this.changePath(this.frameCurrent);
+      this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
       this.registerEvents();
       if (this.cfg.rotateAuto) {
         this.startAutoRotate();
       }
-    };
-    WBTRotator.prototype.loadPathsComplete = function() {
-      console.log("paths done", this.paths);
     };
     WBTRotator.prototype.onPointerDown = function(e) {
       if (e.preventDefault) {
@@ -319,20 +331,23 @@ http://wbtech.pro/
       this.$frameCurrent.removeClass("wbt-rotator-image__active");
       this.$frameCurrent = this.$frames.eq(newIndex);
       this.$frameCurrent.addClass("wbt-rotator-image__active");
+      this.masks[this.framePrevious].attr({
+        "display": "none"
+      });
+      this.masks[newIndex].attr({
+        "display": ""
+      });
     };
     WBTRotator.prototype.changePath = function(newIndex) {
       newIndex %= this.frameCount;
       newIndex += this.frameCount;
       newIndex %= this.frameCount;
-      this.paths[this.framePrevious].forEach(function(el) {
-        return el.hide();
+      this.paths[this.framePrevious].attr({
+        display: "none"
       });
-      this.paths[newIndex].forEach((function(_this) {
-        return function(el) {
-          el.show();
-          return el.attr("fill", "url(" + _this.$frameCurrent.attr("src") + ")");
-        };
-      })(this));
+      this.paths[newIndex].attr({
+        display: ""
+      });
       this.framePrevious = newIndex;
     };
     WBTRotator.prototype.startAutoRotate = function() {
