@@ -184,6 +184,8 @@ http://wbtech.pro/
         pathNew.transform("s.25,.25,0,0")
         pathNew.click ->
           self.$mask.toggleClass("wbt-rotator-mask__active")
+        pathNew.touchend ->
+          self.$mask.toggleClass("wbt-rotator-mask__active")
         pathsSet.add pathNew
         pathsSet.data("group", "testgroup")
         pathsSet.data("index", i)

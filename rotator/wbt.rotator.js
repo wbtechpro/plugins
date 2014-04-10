@@ -226,6 +226,9 @@ http://wbtech.pro/
             pathNew.click(function() {
               return self.$mask.toggleClass("wbt-rotator-mask__active");
             });
+            pathNew.touchend(function() {
+              return self.$mask.toggleClass("wbt-rotator-mask__active");
+            });
             pathsSet.add(pathNew);
             pathsSet.data("group", "testgroup");
             return pathsSet.data("index", i);
