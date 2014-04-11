@@ -15,7 +15,7 @@ $(".any-selector").wbtRotator({
   }]
 });
 
-Copyright 2014, VisualScience, http://visualscience.ru/
+Copyright 2014, Visual Science, http://visualscience.ru/
 Created by WB—Tech, http://wbtech.pro/
 ###
 (($) ->
@@ -182,15 +182,20 @@ Created by WB—Tech, http://wbtech.pro/
         self.$maskTitle.text(self.masks.current)
         self.$el.addClass("wbt-rotator-mask__active")
       else
-        self.masks.current = ""
-        self.$el.removeClass("wbt-rotator-mask__active")
+        if self.masks.current isnt this.data("title")
+          self.masks.current = this.data("title")
+          self.$maskTitle.text(self.masks.current)
+        else
+          self.masks.current = ""
+          self.$el.removeClass("wbt-rotator-mask__active")
+
       for mask in self.cfg.maskSrc
         if self.masks.current and mask.title isnt self.masks.current
-          self.$masks[mask.title].paths[self.frames.current].attr "display": "none"
-          self.$masks[mask.title].images[self.frames.current].attr "display": "none"
+#          self.$masks[mask.title].paths[self.frames.current].attr display: "none"
+          self.$masks[mask.title].images[self.frames.current].attr display: "none"
         else
-          self.$masks[mask.title].paths[self.frames.current].attr "display": ""
-          self.$masks[mask.title].images[self.frames.current].attr "display": ""
+          self.$masks[mask.title].paths[self.frames.current].attr display: ""
+          self.$masks[mask.title].images[self.frames.current].attr display: ""
 
     $(documentSVG).find("path").each (index, el)=>
       pathNew = @maskSVG.path $(el).attr("d")
@@ -319,11 +324,11 @@ Created by WB—Tech, http://wbtech.pro/
     @$frameCurrent.addClass "wbt-rotator-image__active"
 
     for mask in @cfg.maskSrc
-      @$masks[mask.title].paths[@frames.previous].attr "display": "none"
-      @$masks[mask.title].images[@frames.previous].attr "display": "none"
+      @$masks[mask.title].paths[@frames.previous].attr display: "none"
+      @$masks[mask.title].images[@frames.previous].attr display: "none"
+      @$masks[mask.title].paths[newIndex].attr display: ""
       if not @masks.current or mask.title is @masks.current
-        @$masks[mask.title].paths[newIndex].attr "display": ""
-        @$masks[mask.title].images[newIndex].attr "display": ""
+        @$masks[mask.title].images[newIndex].attr display: ""
 
     @frames.previous = newIndex
     return

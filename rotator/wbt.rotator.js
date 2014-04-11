@@ -17,7 +17,7 @@ $(".any-selector").wbtRotator({
   }]
 });
 
-Copyright 2014, VisualScience, http://visualscience.ru/
+Copyright 2014, Visual Science, http://visualscience.ru/
 Created by WB—Tech, http://wbtech.pro/
  */
 
@@ -222,26 +222,28 @@ Created by WB—Tech, http://wbtech.pro/
           self.$maskTitle.text(self.masks.current);
           self.$el.addClass("wbt-rotator-mask__active");
         } else {
-          self.masks.current = "";
-          self.$el.removeClass("wbt-rotator-mask__active");
+          if (self.masks.current !== this.data("title")) {
+            self.masks.current = this.data("title");
+            self.$maskTitle.text(self.masks.current);
+          } else {
+            self.masks.current = "";
+            self.$el.removeClass("wbt-rotator-mask__active");
+          }
         }
         _ref = self.cfg.maskSrc;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
           if (self.masks.current && mask.title !== self.masks.current) {
-            self.$masks[mask.title].paths[self.frames.current].attr({
-              "display": "none"
-            });
             _results.push(self.$masks[mask.title].images[self.frames.current].attr({
-              "display": "none"
+              display: "none"
             }));
           } else {
             self.$masks[mask.title].paths[self.frames.current].attr({
-              "display": ""
+              display: ""
             });
             _results.push(self.$masks[mask.title].images[self.frames.current].attr({
-              "display": ""
+              display: ""
             }));
           }
         }
@@ -397,17 +399,17 @@ Created by WB—Tech, http://wbtech.pro/
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         mask = _ref[_i];
         this.$masks[mask.title].paths[this.frames.previous].attr({
-          "display": "none"
+          display: "none"
         });
         this.$masks[mask.title].images[this.frames.previous].attr({
-          "display": "none"
+          display: "none"
+        });
+        this.$masks[mask.title].paths[newIndex].attr({
+          display: ""
         });
         if (!this.masks.current || mask.title === this.masks.current) {
-          this.$masks[mask.title].paths[newIndex].attr({
-            "display": ""
-          });
           this.$masks[mask.title].images[newIndex].attr({
-            "display": ""
+            display: ""
           });
         }
       }

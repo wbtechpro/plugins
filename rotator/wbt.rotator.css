@@ -9,7 +9,7 @@
 .wbt-rotator__loaded .wbt-rotator-loader {display:none;}
 .wbt-rotator-mask {position:absolute;z-index:3;left:0;top:0;width:100%;height:100%;}
 .wbt-rotator-mask__active:after {content:"";position:absolute;z-index:2;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.4);}
-.wbt-rotator-title {display:none;position:absolute;z-index:3;top:20px;right:20px;text-align:right;font-size:1.5em;color:#fff;}
+.wbt-rotator-title {display:none;position:absolute;z-index:3;left:20px;bottom:20px;text-align:right;font-size:1.35em;color:#fff;}
 .wbt-rotator-mask__active .wbt-rotator-title {display:block;}
 
 /* Cursors*/
