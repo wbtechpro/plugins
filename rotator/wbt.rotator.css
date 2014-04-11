@@ -3,9 +3,8 @@
 .wbt-rotator-image__active {display:block;}
 .wbt-rotator-cover {display:block;opacity:0.5;}
 .wbt-rotator__loaded .wbt-rotator-cover {display:none;}
-.wbt-rotator-loader {position:absolute;z-index:9;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;overflow:hidden;}
+.wbt-rotator-loader {position:absolute;z-index:9;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;overflow:hidden;background:url("preload-sprite.png") center top no-repeat;}
 .wbt-rotator__loading:before {position:absolute;z-index:10;left:0;top:0;width:100%;height:100%;cursor:default;}
-.wbt-rotator__loading .wbt-rotator-loader {background:url("preload-sprite.png") center top no-repeat;}
 .wbt-rotator__loaded .wbt-rotator-loader {display:none;}
 .wbt-rotator-mask {position:absolute;z-index:3;left:0;top:0;width:100%;height:100%;}
 .wbt-rotator-mask__active:before {content:"";position:absolute;z-index:2;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.4);}
