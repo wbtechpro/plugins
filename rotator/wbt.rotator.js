@@ -306,7 +306,15 @@ Created by WB—Tech, http://wbtech.pro/
         })(this));
       }
     };
-    WBTRotator.prototype.loadComplete = function() {};
+    WBTRotator.prototype.loadComplete = function() {
+      this.$frames = this.$el.children(".wbt-rotator-image");
+      this.changeFrame(this.frames.current);
+      this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
+      this.registerEvents();
+      if (this.cfg.rotateAuto) {
+        this.startAutoRotate();
+      }
+    };
     WBTRotator.prototype.onPointerDown = function(e) {
       if (e.preventDefault) {
         e.preventDefault();

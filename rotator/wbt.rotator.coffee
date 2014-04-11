@@ -240,11 +240,11 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::loadComplete = ->
-#    @$frames = @$el.children(".wbt-rotator-image")
-#    @changeFrame @frames.current
-#    @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
-#    @registerEvents()
-#    @startAutoRotate()  if @cfg.rotateAuto
+    @$frames = @$el.children(".wbt-rotator-image")
+    @changeFrame @frames.current
+    @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
+    @registerEvents()
+    @startAutoRotate()  if @cfg.rotateAuto
     return
 
   WBTRotator::onPointerDown = (e) ->
