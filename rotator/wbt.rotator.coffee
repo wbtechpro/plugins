@@ -76,9 +76,9 @@ Created by WB—Tech, http://wbtech.pro/
     @$maskSVG = $(@maskSVG.node)
     @$maskSVG.appendTo(@$el).attr("class": "wbt-rotator-mask")
     @$maskTitle = $("<span></span>").attr(class: "wbt-rotator-title").prependTo(@$el)
-
     if typeof @cfg.maskSrc is "object"
-      @loadSVG()
+      @$el.on "click.wbt-rotator", $.proxy(@loadSVG, this)
+      @loadSVG() if @cfg.autoLoad
     else
       # TODO load combined svg
     return

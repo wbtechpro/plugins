@@ -92,7 +92,10 @@ Created by WB—Tech, http://wbtech.pro/
         "class": "wbt-rotator-title"
       }).prependTo(this.$el);
       if (typeof this.cfg.maskSrc === "object") {
-        this.loadSVG();
+        this.$el.on("click.wbt-rotator", $.proxy(this.loadSVG, this));
+        if (this.cfg.autoLoad) {
+          this.loadSVG();
+        }
       } else {
 
       }
