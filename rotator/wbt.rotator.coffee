@@ -196,7 +196,7 @@ Created by WB—Tech, http://wbtech.pro/
       pathNew = @maskSVG.path $(el).attr("d")
       pathNew.transform("s.25,.25,0,0")
       pathNew.click pathClickHandler
-      pathNew.touchend pathClickHandler
+      pathNew.touchstart pathClickHandler
       pathNew.data("index", index)
       pathNew.data("title", title)
       pathGroup.add pathNew
