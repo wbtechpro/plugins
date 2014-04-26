@@ -22,10 +22,12 @@ Created by WB—Tech, http://wbtech.pro/
   WBTRotator = ($el, params) ->
     @cfg = $.extend({}, WBTRotator::defaults, params)
     @cfg.frameSrc = @createSrcArray(@cfg.src) # Decompose template string into href arrays
-    @cfg.maskSrc = @cfg.masks # External alias
+    @cfg.frameCover = @cfg.cover # Alias
+    @cfg.maskSrc = @cfg.masks # Alias
 
     @$el = $el.addClass("wbt-rotator")
     @$frameCurrent = $()
+    @$maskCurrent = $()
     @$frames = $()
     @frames =
       previous: 0
@@ -55,7 +57,7 @@ Created by WB—Tech, http://wbtech.pro/
     @$loader = $("<span></span>").attr(class: "wbt-rotator-loader").prependTo(@$el)
 
     # Load cover
-    @cfg.frameCover = @cfg.frameSrc[0]  unless @cfg.frameCover
+    @cfg.frameCover = @cfg.src.replace(/{{.*}}/, "00")  unless @cfg.frameCover
     @loadCover()
 
     # Set cursor
@@ -68,8 +70,10 @@ Created by WB—Tech, http://wbtech.pro/
       else @$el.addClass "wbt-rotator__grab"  if @cfg.cursor is "grab"
 
     # Load Images
-    @$el.on "click.wbt-rotator", $.proxy(@loadImages, this)
-    @loadImages() if @cfg.autoLoad
+    if @cfg.autoLoad
+      @loadImages()
+    else
+      @$el.on "click.wbt-rotator", $.proxy(@loadImages, this)
 
     # Load Masks
     @maskSVG = Snap()
@@ -77,10 +81,27 @@ Created by WB—Tech, http://wbtech.pro/
     @$maskSVG.appendTo(@$el).attr("class": "wbt-rotator-mask")
     @$maskTitle = $("<span></span>").attr(class: "wbt-rotator-title").prependTo(@$el)
     if typeof @cfg.maskSrc is "object"
-      @$el.on "click.wbt-rotator", $.proxy(@loadSVG, this)
-      @loadSVG() if @cfg.autoLoad
+      if @cfg.autoLoad
+        @loadSVG()
+      else
+        @$el.on "click.wbt-rotator", $.proxy(@loadSVG, this)
     else
       # TODO load combined svg
+
+    # Load Legend
+    if @cfg.legend
+      @$maskLegend = $("<ul></ul>").attr(class: "wbt-rotator-legend").prependTo(@$el)
+      for mask in @cfg.maskSrc
+        $legendItem = $("<li></li>")
+        $legendItem.text(mask.title)
+        $legendItem.data("title", mask.title)
+        circleColor = mask.color or "#fff"
+        $legendItem.css("background", "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><circle cx='6' cy='6' r='5' stroke='rgba(255,255,255,.5)' stroke-width='1' fill='#{circleColor}' /></svg>\") left center no-repeat")
+        $legendItem.appendTo(@$maskLegend)
+      @$maskLegend.on "click", "li", $.proxy(@onPathClick, @, 0)
+      @$maskLegend.on "mouseover", "li", $.proxy(@onPathOver, @, 0)
+      @$maskLegend.on "mouseout", "li",  $.proxy(@onPathOut, @, 0)
+
     return
 
   WBTRotator::defaults =
@@ -96,6 +117,7 @@ Created by WB—Tech, http://wbtech.pro/
     invertMouse: false # false: counter-clockwise; true: clockwise
     invertAutoRotate: false # false: counter-clockwise; true: clockwise
     enableMouseWheel: true
+    legend: true
     cursor: "grab"
 
   WBTRotator::registerEvents = ->
@@ -115,8 +137,8 @@ Created by WB—Tech, http://wbtech.pro/
     itemIndex = 0
     itemIndexLength = 0
     itemSrcArray = []
-    i = 0
-    while i < itemCount
+    i = 1
+    while i <= itemCount
       itemIndex = i
       itemIndex = "0" + itemIndex  while itemIndexLength = ("" + itemIndex).length < itemCountLength  if @cfg.leadingZero
       itemSrcArray.push template.replace(/{{.*}}/, itemIndex)
@@ -138,9 +160,18 @@ Created by WB—Tech, http://wbtech.pro/
         @$el.width(@frames.size.width).height @frames.size.height
         return
       )
+    .on("error", =>
+        if @cfg.frameCover isnt @cfg.frameSrc[0]
+          @cfg.frameCover = @cfg.frameSrc[0]
+          @loadCover()
+        return
+      )
     return
 
   WBTRotator::loadSVG = ->
+    # Avoid double initialization
+    @$el.off("click.wbt-rotator").addClass "wbt-rotator__loading"
+
     # Decompose template string into href arrays
     for mask, index in @cfg.maskSrc
       @cfg.maskSrc[index].srcArray = @createSrcArray(mask.src)
@@ -175,33 +206,13 @@ Created by WB—Tech, http://wbtech.pro/
       fill: "transparent"
       cursor: "pointer"
 
-    self = this
-    pathClickHandler = ->
-      if not self.masks.current
-        self.masks.current = this.data("title")
-        self.$maskTitle.text(self.masks.current)
-        self.$el.addClass("wbt-rotator-mask__active")
-      else
-        if self.masks.current isnt this.data("title")
-          self.masks.current = this.data("title")
-          self.$maskTitle.text(self.masks.current)
-        else
-          self.masks.current = ""
-          self.$el.removeClass("wbt-rotator-mask__active")
-
-      for mask in self.cfg.maskSrc
-        if self.masks.current and mask.title isnt self.masks.current
-#          self.$masks[mask.title].paths[self.frames.current].attr display: "none"
-          self.$masks[mask.title].images[self.frames.current].attr display: "none"
-        else
-          self.$masks[mask.title].paths[self.frames.current].attr display: ""
-          self.$masks[mask.title].images[self.frames.current].attr display: ""
-
     $(documentSVG).find("path").each (index, el)=>
       pathNew = @maskSVG.path $(el).attr("d")
       pathNew.transform("s.25,.25,0,0")
-      pathNew.click pathClickHandler
-      pathNew.touchstart pathClickHandler
+      pathNew.click $.proxy(@onPathClick, @, pathNew)
+      pathNew.mouseover $.proxy(@onPathOver, @, pathNew)
+      pathNew.mouseout $.proxy(@onPathOut, @, pathNew)
+      pathNew.touchstart $.proxy(@onPathClick, @, pathNew)
       pathNew.data("index", index)
       pathNew.data("title", title)
       pathGroup.add pathNew
@@ -245,6 +256,10 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::loadComplete = ->
+    @$el.on "click.wbt-rotator", "image", =>
+      @masks.current = ""
+      @$el.removeClass("wbt-rotator-mask__active")
+
     @$frames = @$el.children(".wbt-rotator-image")
     @changeFrame @frames.current
     @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
@@ -288,6 +303,60 @@ Created by WB—Tech, http://wbtech.pro/
       @changeFrame delta
     return
 
+  WBTRotator::onPathClick = (el, e)->
+    # Title is either path.data or jQuery event's data attribute
+    # This is to have single handler for legend and path clicks
+    title = if el then el.data("title") else $(e.target).data("title")
+
+    # If nothing is yet selected
+    if not @masks.current
+      @masks.current = title
+      @$maskTitle.text(@masks.current)
+      @$el.addClass("wbt-rotator-mask__active")
+    # If something is selected
+    else
+      # Other mask
+      if @masks.current isnt title
+        @masks.current = title
+        @$maskTitle.text(@masks.current)
+      # This mask
+      else
+        @masks.current = ""
+        @$el.removeClass("wbt-rotator-mask__active")
+
+    # Hide other masks, show clicked
+    for mask in @cfg.maskSrc
+      if @masks.current and mask.title isnt @masks.current
+        @$masks[mask.title].images[@frames.current].attr display: "none"
+      else
+        @$masks[mask.title].paths[@frames.current].attr display: ""
+        @$masks[mask.title].images[@frames.current].attr display: ""
+
+  WBTRotator::onPathOver = (el, e)->
+    title = if el then el.data("title") else $(e.target).data("title")
+
+    # For every mask
+    for mask in @cfg.maskSrc
+      # If mask is hovered
+      if mask.title is title
+        # Show filled path
+        @$masks[mask.title].paths[@frames.current].attr display: "", fill: "rgba(255,255,255,.4)"
+        # And show
+#        if not @masks.current
+#          @$masks[mask.title].images[@frames.current].attr display: ""
+      else
+        @$masks[mask.title].images[@frames.current].attr display: "none"
+
+  WBTRotator::onPathOut = (el, e)->
+    title = if el then el.data("title") else $(e.target).data("title")
+    @$masks[title].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+
+#    if not @masks.current
+
+
+
+
+
   # TODO: add momentum
   WBTRotator::onPointerEnter = ->
     #        this.stopAutoRotate();
@@ -305,8 +374,9 @@ Created by WB—Tech, http://wbtech.pro/
       else
         scrollUp = (e.originalEvent.wheelDelta > 0)
 
-      @frames.current %= @frames.total
       if scrollUp then ++@frames.current else --@frames.current
+      @frames.current += @frames.total
+      @frames.current %= @frames.total
       @changeFrame @frames.current
     return
 

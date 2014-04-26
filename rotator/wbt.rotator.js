@@ -25,11 +25,14 @@ Created by WB—Tech, http://wbtech.pro/
   (function($) {
     var WBTRotator;
     WBTRotator = function($el, params) {
+      var $legendItem, circleColor, mask, _i, _len, _ref;
       this.cfg = $.extend({}, WBTRotator.prototype.defaults, params);
       this.cfg.frameSrc = this.createSrcArray(this.cfg.src);
+      this.cfg.frameCover = this.cfg.cover;
       this.cfg.maskSrc = this.cfg.masks;
       this.$el = $el.addClass("wbt-rotator");
       this.$frameCurrent = $();
+      this.$maskCurrent = $();
       this.$frames = $();
       this.frames = {
         previous: 0,
@@ -63,7 +66,7 @@ Created by WB—Tech, http://wbtech.pro/
         "class": "wbt-rotator-loader"
       }).prependTo(this.$el);
       if (!this.cfg.frameCover) {
-        this.cfg.frameCover = this.cfg.frameSrc[0];
+        this.cfg.frameCover = this.cfg.src.replace(/{{.*}}/, "00");
       }
       this.loadCover();
       if (this.cfg.rotateManual) {
@@ -79,9 +82,10 @@ Created by WB—Tech, http://wbtech.pro/
           }
         }
       }
-      this.$el.on("click.wbt-rotator", $.proxy(this.loadImages, this));
       if (this.cfg.autoLoad) {
         this.loadImages();
+      } else {
+        this.$el.on("click.wbt-rotator", $.proxy(this.loadImages, this));
       }
       this.maskSVG = Snap();
       this.$maskSVG = $(this.maskSVG.node);
@@ -92,12 +96,31 @@ Created by WB—Tech, http://wbtech.pro/
         "class": "wbt-rotator-title"
       }).prependTo(this.$el);
       if (typeof this.cfg.maskSrc === "object") {
-        this.$el.on("click.wbt-rotator", $.proxy(this.loadSVG, this));
         if (this.cfg.autoLoad) {
           this.loadSVG();
+        } else {
+          this.$el.on("click.wbt-rotator", $.proxy(this.loadSVG, this));
         }
       } else {
 
+      }
+      if (this.cfg.legend) {
+        this.$maskLegend = $("<ul></ul>").attr({
+          "class": "wbt-rotator-legend"
+        }).prependTo(this.$el);
+        _ref = this.cfg.maskSrc;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          mask = _ref[_i];
+          $legendItem = $("<li></li>");
+          $legendItem.text(mask.title);
+          $legendItem.data("title", mask.title);
+          circleColor = mask.color || "#fff";
+          $legendItem.css("background", "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><circle cx='6' cy='6' r='5' stroke='rgba(255,255,255,.5)' stroke-width='1' fill='" + circleColor + "' /></svg>\") left center no-repeat");
+          $legendItem.appendTo(this.$maskLegend);
+        }
+        this.$maskLegend.on("click", "li", $.proxy(this.onPathClick, this, 0));
+        this.$maskLegend.on("mouseover", "li", $.proxy(this.onPathOver, this, 0));
+        this.$maskLegend.on("mouseout", "li", $.proxy(this.onPathOut, this, 0));
       }
     };
     WBTRotator.prototype.defaults = {
@@ -113,6 +136,7 @@ Created by WB—Tech, http://wbtech.pro/
       invertMouse: false,
       invertAutoRotate: false,
       enableMouseWheel: true,
+      legend: true,
       cursor: "grab"
     };
     WBTRotator.prototype.registerEvents = function() {
@@ -134,8 +158,8 @@ Created by WB—Tech, http://wbtech.pro/
       itemIndex = 0;
       itemIndexLength = 0;
       itemSrcArray = [];
-      i = 0;
-      while (i < itemCount) {
+      i = 1;
+      while (i <= itemCount) {
         itemIndex = i;
         if (this.cfg.leadingZero) {
           while (itemIndexLength = ("" + itemIndex).length < itemCountLength) {
@@ -163,10 +187,18 @@ Created by WB—Tech, http://wbtech.pro/
           };
           _this.$el.width(_this.frames.size.width).height(_this.frames.size.height);
         };
+      })(this)).on("error", (function(_this) {
+        return function() {
+          if (_this.cfg.frameCover !== _this.cfg.frameSrc[0]) {
+            _this.cfg.frameCover = _this.cfg.frameSrc[0];
+            _this.loadCover();
+          }
+        };
       })(this));
     };
     WBTRotator.prototype.loadSVG = function() {
       var getCallback, i, index, mask, maskSrc, _i, _j, _len, _ref, _ref1, _results;
+      this.$el.off("click.wbt-rotator").addClass("wbt-rotator__loading");
       _ref = this.cfg.maskSrc;
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
         mask = _ref[index];
@@ -195,7 +227,7 @@ Created by WB—Tech, http://wbtech.pro/
       return _results;
     };
     WBTRotator.prototype.loadedSVG = function(documentSVG, title, index) {
-      var imageNew, mask, path, pathClickHandler, pathGroup, self, _i, _j, _len, _len1, _ref, _ref1;
+      var imageNew, mask, path, pathGroup, _i, _j, _len, _len1, _ref, _ref1;
       this.masks.loaded++;
       this.updateLoader();
       if (this.$masks[title] == null) {
@@ -214,48 +246,15 @@ Created by WB—Tech, http://wbtech.pro/
         fill: "transparent",
         cursor: "pointer"
       });
-      self = this;
-      pathClickHandler = function() {
-        var mask, _i, _len, _ref, _results;
-        if (!self.masks.current) {
-          self.masks.current = this.data("title");
-          self.$maskTitle.text(self.masks.current);
-          self.$el.addClass("wbt-rotator-mask__active");
-        } else {
-          if (self.masks.current !== this.data("title")) {
-            self.masks.current = this.data("title");
-            self.$maskTitle.text(self.masks.current);
-          } else {
-            self.masks.current = "";
-            self.$el.removeClass("wbt-rotator-mask__active");
-          }
-        }
-        _ref = self.cfg.maskSrc;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          mask = _ref[_i];
-          if (self.masks.current && mask.title !== self.masks.current) {
-            _results.push(self.$masks[mask.title].images[self.frames.current].attr({
-              display: "none"
-            }));
-          } else {
-            self.$masks[mask.title].paths[self.frames.current].attr({
-              display: ""
-            });
-            _results.push(self.$masks[mask.title].images[self.frames.current].attr({
-              display: ""
-            }));
-          }
-        }
-        return _results;
-      };
       $(documentSVG).find("path").each((function(_this) {
         return function(index, el) {
           var pathNew;
           pathNew = _this.maskSVG.path($(el).attr("d"));
           pathNew.transform("s.25,.25,0,0");
-          pathNew.click(pathClickHandler);
-          pathNew.touchstart(pathClickHandler);
+          pathNew.click($.proxy(_this.onPathClick, _this, pathNew));
+          pathNew.mouseover($.proxy(_this.onPathOver, _this, pathNew));
+          pathNew.mouseout($.proxy(_this.onPathOut, _this, pathNew));
+          pathNew.touchstart($.proxy(_this.onPathClick, _this, pathNew));
           pathNew.data("index", index);
           pathNew.data("title", title);
           return pathGroup.add(pathNew);
@@ -312,6 +311,12 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.loadComplete = function() {
+      this.$el.on("click.wbt-rotator", "image", (function(_this) {
+        return function() {
+          _this.masks.current = "";
+          return _this.$el.removeClass("wbt-rotator-mask__active");
+        };
+      })(this));
       this.$frames = this.$el.children(".wbt-rotator-image");
       this.changeFrame(this.frames.current);
       this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
@@ -361,6 +366,68 @@ Created by WB—Tech, http://wbtech.pro/
         this.changeFrame(delta);
       }
     };
+    WBTRotator.prototype.onPathClick = function(el, e) {
+      var mask, title, _i, _len, _ref, _results;
+      title = el ? el.data("title") : $(e.target).data("title");
+      if (!this.masks.current) {
+        this.masks.current = title;
+        this.$maskTitle.text(this.masks.current);
+        this.$el.addClass("wbt-rotator-mask__active");
+      } else {
+        if (this.masks.current !== title) {
+          this.masks.current = title;
+          this.$maskTitle.text(this.masks.current);
+        } else {
+          this.masks.current = "";
+          this.$el.removeClass("wbt-rotator-mask__active");
+        }
+      }
+      _ref = this.cfg.maskSrc;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        mask = _ref[_i];
+        if (this.masks.current && mask.title !== this.masks.current) {
+          _results.push(this.$masks[mask.title].images[this.frames.current].attr({
+            display: "none"
+          }));
+        } else {
+          this.$masks[mask.title].paths[this.frames.current].attr({
+            display: ""
+          });
+          _results.push(this.$masks[mask.title].images[this.frames.current].attr({
+            display: ""
+          }));
+        }
+      }
+      return _results;
+    };
+    WBTRotator.prototype.onPathOver = function(el, e) {
+      var mask, title, _i, _len, _ref, _results;
+      title = el ? el.data("title") : $(e.target).data("title");
+      _ref = this.cfg.maskSrc;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        mask = _ref[_i];
+        if (mask.title === title) {
+          _results.push(this.$masks[mask.title].paths[this.frames.current].attr({
+            display: "",
+            fill: "rgba(255,255,255,.4)"
+          }));
+        } else {
+          _results.push(this.$masks[mask.title].images[this.frames.current].attr({
+            display: "none"
+          }));
+        }
+      }
+      return _results;
+    };
+    WBTRotator.prototype.onPathOut = function(el, e) {
+      var title;
+      title = el ? el.data("title") : $(e.target).data("title");
+      return this.$masks[title].paths[this.frames.current].attr({
+        fill: "rgba(255,255,255,0)"
+      });
+    };
     WBTRotator.prototype.onPointerEnter = function() {};
     WBTRotator.prototype.onPointerLeave = function() {};
     WBTRotator.prototype.onScroll = function(e, delta) {
@@ -375,12 +442,13 @@ Created by WB—Tech, http://wbtech.pro/
         } else {
           scrollUp = e.originalEvent.wheelDelta > 0;
         }
-        this.frames.current %= this.frames.total;
         if (scrollUp) {
           ++this.frames.current;
         } else {
           --this.frames.current;
         }
+        this.frames.current += this.frames.total;
+        this.frames.current %= this.frames.total;
         this.changeFrame(this.frames.current);
       }
     };
