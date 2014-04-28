@@ -1,7 +1,7 @@
 .wbt-rotator {overflow:hidden;position:relative;margin:20px 0;background-color:#fff;box-shadow:0 0 20px rgba(0,0,0,0.5);-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 .wbt-rotator-image {display:none;position:relative;z-index:1;}
 .wbt-rotator-image__active {display:block;}
-.wbt-rotator-cover {display:block;opacity:0.5;}
+.wbt-rotator-cover {position:relative;z-index:4;display:block;opacity:0.5;cursor:pointer;}
 .wbt-rotator__loaded .wbt-rotator-cover {display:none;}
 .wbt-rotator-loader {position:absolute;z-index:9;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;overflow:hidden;background:url("preload-sprite.png") center top no-repeat;}
 .wbt-rotator__loaded .wbt-rotator-loader {display:none;}
@@ -10,8 +10,11 @@
 .wbt-rotator-title {display:none;position:absolute;z-index:3;left:20px;bottom:20px;text-align:right;font-size:1.35em;line-height:1.5;color:#fff;}
 .wbt-rotator-mask__active .wbt-rotator-title {display:block;}
 .wbt-rotator-legend {display:none;position:absolute;z-index:8;right:20px;top:20px;margin:0;padding:0;font-size:1.35em;line-height:1.5;color:#fff;list-style:none;}
-.wbt-rotator-legend > li {cursor:pointer;padding:0 0 0 20px;}
-.wbt-rotator-legend > li:hover {color:#ddd;}
+.wbt-rotator-legend_item {cursor:pointer;padding:0 0 0 20px;}
+.wbt-rotator-legend_item:hover,
+.wbt-rotator-legend_item__hover {color:#999;}
+.wbt-rotator-legend_item__active,
+.wbt-rotator-legend_item__active:hover {color:#666;}
 .wbt-rotator__loaded .wbt-rotator-legend {display:block;}
 
 /* Cursors*/

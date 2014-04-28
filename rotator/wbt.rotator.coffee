@@ -1,5 +1,5 @@
 ###
-wbt.rotator.js v2.0.0
+wbt.rotator.js v2.1.0
 
 Dependencies: jQuery 1.7+, Snap SVG 0.2+
 
@@ -23,6 +23,7 @@ Created by WB—Tech, http://wbtech.pro/
     @cfg = $.extend({}, WBTRotator::defaults, params)
     @cfg.frameSrc = @createSrcArray(@cfg.src) # Decompose template string into href arrays
     @cfg.frameCover = @cfg.cover # Alias
+    @cfg.frameFirst = @cfg.first # Alias
     @cfg.maskSrc = @cfg.masks # Alias
 
     @$el = $el.addClass("wbt-rotator")
@@ -45,13 +46,22 @@ Created by WB—Tech, http://wbtech.pro/
       total: @cfg.maskSrc.length * @frames.total
       loaded: 0
 
+    @$legends = {}
+
     @pointerPressed = false
+    @pointerMoved = false
     @pointerPosition =
       x: 0
       y: 0
 
     return $.wbtError("Specify non empty rotator placeholder.") unless @$el.length
     return $.wbtError("Specify 'src' in $().wbtRotator() call.") if not @cfg.frameSrc
+
+    # Get localized titles
+    if $.wbtRotator.l10n?
+      for mask in @cfg.maskSrc
+        if not mask.title? and mask.titleId
+          mask.title = $.wbtRotator.l10n[@cfg.language][mask.titleId]
 
     # Create loading spinner
     @$loader = $("<span></span>").attr(class: "wbt-rotator-loader").prependTo(@$el)
@@ -73,38 +83,44 @@ Created by WB—Tech, http://wbtech.pro/
     if @cfg.autoLoad
       @loadImages()
     else
-      @$el.on "click.wbt-rotator", $.proxy(@loadImages, this)
+      @$el.on "#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator", $.proxy(@loadImages, this)
 
     # Load Masks
     @maskSVG = Snap()
     @$maskSVG = $(@maskSVG.node)
     @$maskSVG.appendTo(@$el).attr("class": "wbt-rotator-mask")
-    @$maskTitle = $("<span></span>").attr(class: "wbt-rotator-title").prependTo(@$el)
     if typeof @cfg.maskSrc is "object"
       if @cfg.autoLoad
         @loadSVG()
       else
-        @$el.on "click.wbt-rotator", $.proxy(@loadSVG, this)
+        @$el.on "#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator", $.proxy(@loadSVG, this)
     else
       # TODO load combined svg
 
     # Load Legend
     if @cfg.legend
-      @$maskLegend = $("<ul></ul>").attr(class: "wbt-rotator-legend").prependTo(@$el)
+      @cfg.titles = false
+      @$maskLegend = $("<ul></ul>").attr("class": "wbt-rotator-legend").prependTo(@$el)
       for mask in @cfg.maskSrc
-        $legendItem = $("<li></li>")
+        $legendItem = $("<li></li>").attr("class", "wbt-rotator-legend_item")
         $legendItem.text(mask.title)
         $legendItem.data("title", mask.title)
-        circleColor = mask.color or "#fff"
-        $legendItem.css("background", "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><circle cx='6' cy='6' r='5' stroke='rgba(255,255,255,.5)' stroke-width='1' fill='#{circleColor}' /></svg>\") left center no-repeat")
+        $legendItem.css("background", "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><circle cx='6' cy='6' r='5' stroke='rgba(64,64,64,.6)' stroke-width='1' fill='#{mask.color or "#fff"}' /></svg>\") left center no-repeat")
         $legendItem.appendTo(@$maskLegend)
-      @$maskLegend.on "click", "li", $.proxy(@onPathClick, @, 0)
-      @$maskLegend.on "mouseover", "li", $.proxy(@onPathOver, @, 0)
-      @$maskLegend.on "mouseout", "li",  $.proxy(@onPathOut, @, 0)
+        @$legends[mask.title] = $legendItem
+      @$maskLegend.on "#{if $.wbtIsTouch() then "singleTap" else "click"}", "li", $.proxy(@onPathClick, @, null) # Sending null to set proper arguments order for both click and hover events
+      if not $.wbtIsTouch()
+        @$maskLegend.on "mouseover", "li", $.proxy(@onPathOver, @, null)
+        @$maskLegend.on "mouseout", "li",  $.proxy(@onPathOut, @, null)
+
+    # Title element init
+    if @cfg.titles
+      @$maskTitle = $("<span></span>").attr(class: "wbt-rotator-title").prependTo(@$el)
 
     return
 
   WBTRotator::defaults =
+    language: "EN"
     frameCover: "" # if not present, first frame taken
     frameSrc: ""
     frameFirst: 0
@@ -117,7 +133,10 @@ Created by WB—Tech, http://wbtech.pro/
     invertMouse: false # false: counter-clockwise; true: clockwise
     invertAutoRotate: false # false: counter-clockwise; true: clockwise
     enableMouseWheel: true
+    circular: true
+    fogging: true
     legend: true
+    title: true
     cursor: "grab"
 
   WBTRotator::registerEvents = ->
@@ -170,7 +189,7 @@ Created by WB—Tech, http://wbtech.pro/
 
   WBTRotator::loadSVG = ->
     # Avoid double initialization
-    @$el.off("click.wbt-rotator").addClass "wbt-rotator__loading"
+    @$el.off("#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator").addClass "wbt-rotator__loading"
 
     # Decompose template string into href arrays
     for mask, index in @cfg.maskSrc
@@ -199,20 +218,27 @@ Created by WB—Tech, http://wbtech.pro/
     # TODO refactor start
     imageNew = @maskSVG.image(@cfg.frameSrc[index], 0, 0)
     imageNew.attr("display", "none")
+    imageGroup = @maskSVG.g().append imageNew
 
     pathGroup = @maskSVG.g().attr
       display: "none"
-#      fill:"rgba(0,255,0,.5)"
       fill: "transparent"
       cursor: "pointer"
 
     $(documentSVG).find("path").each (index, el)=>
       pathNew = @maskSVG.path $(el).attr("d")
       pathNew.transform("s.25,.25,0,0")
-      pathNew.click $.proxy(@onPathClick, @, pathNew)
-      pathNew.mouseover $.proxy(@onPathOver, @, pathNew)
-      pathNew.mouseout $.proxy(@onPathOut, @, pathNew)
-      pathNew.touchstart $.proxy(@onPathClick, @, pathNew)
+      if $.wbtIsTouch()
+        pathNew.touchstart =>
+          @pointerMoved = false
+        pathNew.touchmove =>
+          @pointerMoved = true
+        pathNew.touchend =>
+          $.proxy(@onPathClick, @, pathNew)() if not @pointerMoved
+      else
+        pathNew.click $.proxy(@onPathClick, @, pathNew)
+        pathNew.mouseover $.proxy(@onPathOver, @, pathNew)
+        pathNew.mouseout $.proxy(@onPathOut, @, pathNew)
       pathNew.data("index", index)
       pathNew.data("title", title)
       pathGroup.add pathNew
@@ -233,7 +259,7 @@ Created by WB—Tech, http://wbtech.pro/
 
   WBTRotator::loadImages = ->
     # Avoid double initialization
-    @$el.off("click.wbt-rotator").addClass "wbt-rotator__loading"
+    @$el.off("#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator").addClass "wbt-rotator__loading"
 
     for i in [0..@frames.total]
       $("<img />").attr(
@@ -256,10 +282,7 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::loadComplete = ->
-    @$el.on "click.wbt-rotator", "image", =>
-      @masks.current = ""
-      @$el.removeClass("wbt-rotator-mask__active")
-
+    @$el.on "#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator", "image", $.proxy(@onPathDeselect, @, null)
     @$frames = @$el.children(".wbt-rotator-image")
     @changeFrame @frames.current
     @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
@@ -303,6 +326,15 @@ Created by WB—Tech, http://wbtech.pro/
       @changeFrame delta
     return
 
+  WBTRotator::onPathDeselect = (el, e)->
+    if not @cfg.fogging
+      @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+    if @cfg.legend
+      @$legends[@masks.current].removeClass("wbt-rotator-legend_item__active")
+    @masks.current = ""
+    @$el.removeClass("wbt-rotator-mask__active")
+
+
   WBTRotator::onPathClick = (el, e)->
     # Title is either path.data or jQuery event's data attribute
     # This is to have single handler for legend and path clicks
@@ -311,20 +343,42 @@ Created by WB—Tech, http://wbtech.pro/
     # If nothing is yet selected
     if not @masks.current
       @masks.current = title
-      @$maskTitle.text(@masks.current)
-      @$el.addClass("wbt-rotator-mask__active")
+      for mask in @cfg.maskSrc
+        if mask.title is title
+          colorRGB = Snap.getRGB mask.color
+          @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
+      if @cfg.titles
+        @$maskTitle.text(@masks.current)
+      if @cfg.fogging
+        @$el.addClass("wbt-rotator-mask__active")
+
     # If something is selected
     else
       # Other mask
       if @masks.current isnt title
+        if not @cfg.fogging
+          @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
         @masks.current = title
-        @$maskTitle.text(@masks.current)
-      # This mask
+        for mask in @cfg.maskSrc
+          if mask.title is title
+            colorRGB = Snap.getRGB mask.color
+            @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
+        if @cfg.titles
+          @$maskTitle.text(@masks.current)
       else
         @masks.current = ""
         @$el.removeClass("wbt-rotator-mask__active")
 
-    # Hide other masks, show clicked
+    # Select legend item
+    if @cfg.legend
+      for mask in @cfg.maskSrc
+        @$legends[mask.title].toggleClass("wbt-rotator-legend_item__active", mask.title is @masks.current)
+
+    # Remove hover
+    if not @cfg.fogging and not @masks.current or @cfg.fogging
+      @$masks[title].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+
+    # Hide other masks, but show clicked
     for mask in @cfg.maskSrc
       if @masks.current and mask.title isnt @masks.current
         @$masks[mask.title].images[@frames.current].attr display: "none"
@@ -334,27 +388,28 @@ Created by WB—Tech, http://wbtech.pro/
 
   WBTRotator::onPathOver = (el, e)->
     title = if el then el.data("title") else $(e.target).data("title")
-
-    # For every mask
+    # Hover mask it is the one that was hovered
     for mask in @cfg.maskSrc
-      # If mask is hovered
-      if mask.title is title
-        # Show filled path
-        @$masks[mask.title].paths[@frames.current].attr display: "", fill: "rgba(255,255,255,.4)"
-        # And show
-#        if not @masks.current
-#          @$masks[mask.title].images[@frames.current].attr display: ""
-      else
-        @$masks[mask.title].images[@frames.current].attr display: "none"
+      if mask.title is title and mask.title isnt @masks.current
+        colorRGB = Snap.getRGB mask.color
+        @$masks[mask.title].paths[@frames.current].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
+
+    # Hover legend item
+    if @cfg.legend
+      for mask in @cfg.maskSrc
+        @$legends[mask.title].toggleClass("wbt-rotator-legend_item__hover", mask.title is title)
+
 
   WBTRotator::onPathOut = (el, e)->
     title = if el then el.data("title") else $(e.target).data("title")
-    @$masks[title].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+    # Remove hover
+    if @cfg.fogging or title isnt @masks.current
+      @$masks[title].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
 
-#    if not @masks.current
-
-
-
+    # Unhover legend item
+    if @cfg.legend
+      for mask in @cfg.maskSrc
+        @$legends[mask.title].removeClass("wbt-rotator-legend_item__hover")
 
 
   # TODO: add momentum
@@ -374,17 +429,32 @@ Created by WB—Tech, http://wbtech.pro/
       else
         scrollUp = (e.originalEvent.wheelDelta > 0)
 
-      if scrollUp then ++@frames.current else --@frames.current
-      @frames.current += @frames.total
-      @frames.current %= @frames.total
+      if scrollUp then @frames.current++ else @frames.current--
+
+      # Rotate avoiding negative values or restrict by min/max
+      if @cfg.circular
+        @frames.current += @frames.total
+        @frames.current %= @frames.total
+      else
+        if @frames.current > @frames.total - 1
+          @frames.current = @frames.total - 1
+        if @frames.current < 0
+          @frames.current = 0
+
       @changeFrame @frames.current
     return
 
   WBTRotator::changeFrame = (newIndex) ->
-    # Avoid negative values before rotation by adding base and Rotate around total frame count
-    newIndex %= @frames.total
-    newIndex += @frames.total
-    newIndex %= @frames.total
+    # Rotate avoiding negative values or restrict by min/max
+    if @cfg.circular
+      #newIndex %= @frames.total
+      newIndex += @frames.total
+      newIndex %= @frames.total
+    else
+      if newIndex > @frames.total - 1
+        newIndex = @frames.total - 1
+      if newIndex < 0
+        newIndex = 0
 
     return if newIndex is @framePrevious
 
@@ -394,10 +464,15 @@ Created by WB—Tech, http://wbtech.pro/
     @$frameCurrent.addClass "wbt-rotator-image__active"
 
     for mask in @cfg.maskSrc
-      @$masks[mask.title].paths[@frames.previous].attr display: "none"
+      @$masks[mask.title].paths[@frames.previous].attr display: "none", fill: "rgba(255,255,255,0)"
       @$masks[mask.title].images[@frames.previous].attr display: "none"
+
       @$masks[mask.title].paths[newIndex].attr display: ""
-      if not @masks.current or mask.title is @masks.current
+      if not @cfg.fogging and @masks.current is mask.title
+        colorRGB = Snap.getRGB mask.color
+        @$masks[mask.title].paths[newIndex].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
+      # Show image if it something is selected and it is this mask
+      if @masks.current and @masks.current is mask.title
         @$masks[mask.title].images[newIndex].attr display: ""
 
     @frames.previous = newIndex
@@ -424,6 +499,8 @@ Created by WB—Tech, http://wbtech.pro/
 
   $.fn.wbtRotator = (params) ->
     new WBTRotator(this, params)
+
+  $.wbtRotator = {} || $.wbtRotator
 
   return
 ) jQuery
