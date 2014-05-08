@@ -147,6 +147,7 @@ Created by WB—Tech, http://wbtech.pro/
       frameCover: "",
       frameSrc: "",
       frameFirst: 0,
+      first: 0,
       leadingZero: true,
       autoLoad: true,
       rotateAuto: false,
@@ -298,6 +299,7 @@ Created by WB—Tech, http://wbtech.pro/
         };
       })(this));
       this.$masks[title].paths[index] = pathGroup;
+      this.$masks[title].paths[index].data("id", index);
       imageNew.attr("mask", pathGroup.clone().attr({
         fill: "#fff",
         display: ""
@@ -398,22 +400,27 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.onPathDeselect = function(el, e) {
-      if (!this.cfg.fogging) {
-        this.$masks[this.masks.current].paths[this.frames.current].attr({
-          fill: "rgba(255,255,255,0)"
-        });
+      if (this.masks.current) {
+        if (!this.cfg.fogging) {
+          this.$masks[this.masks.current].paths[this.frames.current].attr({
+            fill: "rgba(255,255,255,0)"
+          });
+        }
+        if (this.cfg.legend) {
+          this.$legends[this.masks.current].removeClass("wbt-rotator-legend_item__active");
+        }
+        this.masks.current = "";
+        return this.$el.removeClass("wbt-rotator-mask__active");
       }
-      if (this.cfg.legend) {
-        this.$legends[this.masks.current].removeClass("wbt-rotator-legend_item__active");
-      }
-      this.masks.current = "";
-      return this.$el.removeClass("wbt-rotator-mask__active");
     };
     WBTRotator.prototype.onPathClick = function(el, e) {
       var colorRGB, mask, title, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _results;
       title = el ? el.data("title") : $(e.target).data("title");
       if (!this.masks.current) {
         this.masks.current = title;
+        if (!this.$masks[this.masks.current].paths[this.frames.current].node.children.length) {
+          this.findFrame();
+        }
         _ref = this.cfg.maskSrc;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
@@ -561,6 +568,54 @@ Created by WB—Tech, http://wbtech.pro/
         this.changeFrame(this.frames.current);
       }
     };
+    WBTRotator.prototype.findFrame = function() {
+      var animateStep, path, pathsRotated, stepsBackward, stepsForward, _i, _j, _len;
+      pathsRotated = this.$masks[this.masks.current].paths.slice(0);
+      stepsForward = 0;
+      pathsRotated.rotate(this.frames.current);
+      for (_i = 0, _len = pathsRotated.length; _i < _len; _i++) {
+        path = pathsRotated[_i];
+        if (!path.node.children.length) {
+          stepsForward++;
+        } else {
+          break;
+        }
+      }
+      stepsBackward = 0;
+      pathsRotated.rotate(1);
+      for (_j = pathsRotated.length - 1; _j >= 0; _j += -1) {
+        path = pathsRotated[_j];
+        if (!path.node.children.length) {
+          stepsBackward++;
+        } else {
+          break;
+        }
+      }
+      animateStep = (function(_this) {
+        return function(stepsRemaining, direction) {
+          _this.frames.current += direction;
+          _this.frames.current %= _this.frames.total;
+          console.log(_this.frames.current);
+          _this.changeFrame(_this.frames.current);
+          if (stepsRemaining > 1) {
+            return setTimeout(function() {
+              return animateStep(stepsRemaining - 1, direction);
+            }, 40);
+          }
+        };
+      })(this);
+      if (stepsForward === 0 || stepsBackward === 0) {
+        return false;
+      } else {
+        if (stepsBackward > stepsForward) {
+          animateStep(stepsForward, 1);
+        }
+        if (stepsBackward < stepsForward) {
+          animateStep(stepsBackward, -1);
+        }
+      }
+      return true;
+    };
     WBTRotator.prototype.changeFrame = function(newIndex) {
       var colorRGB, mask, _i, _len, _ref;
       if (this.cfg.circular) {
@@ -634,6 +689,19 @@ Created by WB—Tech, http://wbtech.pro/
       return new WBTRotator(this, params);
     };
     $.wbtRotator = {} || $.wbtRotator;
+    Array.prototype.rotate = (function() {
+      var push, splice;
+      push = Array.prototype.push;
+      splice = Array.prototype.splice;
+      return function(count) {
+        var len;
+        len = this.length >>> 0;
+        count = count >> 0;
+        count = ((count % len) + len) % len;
+        push.apply(this, splice.call(this, 0, count));
+        return this;
+      };
+    })();
   })(jQuery);
 
 }).call(this);

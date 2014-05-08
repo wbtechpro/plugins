@@ -124,6 +124,7 @@ Created by WB—Tech, http://wbtech.pro/
     frameCover: "" # if not present, first frame taken
     frameSrc: ""
     frameFirst: 0
+    first: 0
     leadingZero: true
     autoLoad: true
     rotateAuto: false
@@ -244,6 +245,7 @@ Created by WB—Tech, http://wbtech.pro/
       pathGroup.add pathNew
 
     @$masks[title].paths[index] = pathGroup
+    @$masks[title].paths[index].data("id", index)
 
     imageNew.attr("mask", pathGroup.clone().attr(fill: "#fff", display: ""))
     @$masks[title].images[index] = imageNew
@@ -327,13 +329,13 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::onPathDeselect = (el, e)->
-    if not @cfg.fogging
-      @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
-    if @cfg.legend
-      @$legends[@masks.current].removeClass("wbt-rotator-legend_item__active")
-    @masks.current = ""
-    @$el.removeClass("wbt-rotator-mask__active")
-
+    if @masks.current
+      if not @cfg.fogging
+        @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+      if @cfg.legend
+        @$legends[@masks.current].removeClass("wbt-rotator-legend_item__active")
+      @masks.current = ""
+      @$el.removeClass("wbt-rotator-mask__active")
 
   WBTRotator::onPathClick = (el, e)->
     # Title is either path.data or jQuery event's data attribute
@@ -343,6 +345,11 @@ Created by WB—Tech, http://wbtech.pro/
     # If nothing is yet selected
     if not @masks.current
       @masks.current = title
+
+      # Search for closest frame with existing path if current has none
+      if not @$masks[@masks.current].paths[@frames.current].node.children.length
+        @findFrame()
+
       for mask in @cfg.maskSrc
         if mask.title is title
           colorRGB = Snap.getRGB mask.color
@@ -444,10 +451,55 @@ Created by WB—Tech, http://wbtech.pro/
       @changeFrame @frames.current
     return
 
+  WBTRotator::findFrame = () ->
+    # Copy paths array to temporary array and remove current item
+    pathsRotated = @$masks[@masks.current].paths.slice(0)
+
+    # Rotate one position and count steps to first path group with children
+    stepsForward = 0
+    pathsRotated.rotate(@frames.current)
+    for path in pathsRotated
+      if not path.node.children.length
+        stepsForward++
+      else
+        break
+
+    # Rotate to current item and count steps to first path group with children
+    stepsBackward = 0
+    pathsRotated.rotate(1)
+    for path in pathsRotated by -1
+      if not path.node.children.length
+        stepsBackward++
+      else
+        break
+
+    animateStep = (stepsRemaining, direction)=>
+      @frames.current += direction
+      @frames.current %= @frames.total
+      console.log @frames.current
+
+      @changeFrame @frames.current
+      if stepsRemaining > 1
+        setTimeout ->
+          animateStep(stepsRemaining-1, direction)
+        , 40
+
+    # Do nothing when we have paths on current frame
+    if stepsForward is 0 or stepsBackward is 0
+      return false
+    # Or start animation to rotate to first frame with paths
+    else
+      if stepsBackward > stepsForward
+        animateStep(stepsForward, 1)
+      if stepsBackward < stepsForward
+        animateStep(stepsBackward, -1)
+
+    return true
+
   WBTRotator::changeFrame = (newIndex) ->
     # Rotate avoiding negative values or restrict by min/max
     if @cfg.circular
-      #newIndex %= @frames.total
+#      newIndex %= @frames.total
       newIndex += @frames.total
       newIndex %= @frames.total
     else
@@ -501,6 +553,17 @@ Created by WB—Tech, http://wbtech.pro/
     new WBTRotator(this, params)
 
   $.wbtRotator = {} || $.wbtRotator
+
+  Array::rotate = (->
+    push = Array::push
+    splice = Array::splice
+    (count) ->
+      len = @length >>> 0
+      count = count >> 0
+      count = ((count % len) + len) % len
+      push.apply this, splice.call(this, 0, count)
+      this
+  )()
 
   return
 ) jQuery
