@@ -418,9 +418,8 @@ Created by WB—Tech, http://wbtech.pro/
       title = el ? el.data("title") : $(e.target).data("title");
       if (!this.masks.current) {
         this.masks.current = title;
-        if (!this.$masks[this.masks.current].paths[this.frames.current].node.children.length) {
-          this.findFrame();
-        }
+        console.log(this.$masks[this.masks.current].paths[this.frames.current].node.childElementCount);
+        this.findFrame();
         _ref = this.cfg.maskSrc;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
@@ -575,7 +574,7 @@ Created by WB—Tech, http://wbtech.pro/
       pathsRotated.rotate(this.frames.current);
       for (_i = 0, _len = pathsRotated.length; _i < _len; _i++) {
         path = pathsRotated[_i];
-        if (!path.node.children.length) {
+        if (!path.node.childElementCount) {
           stepsForward++;
         } else {
           break;
@@ -585,7 +584,7 @@ Created by WB—Tech, http://wbtech.pro/
       pathsRotated.rotate(1);
       for (_j = pathsRotated.length - 1; _j >= 0; _j += -1) {
         path = pathsRotated[_j];
-        if (!path.node.children.length) {
+        if (!path.node.childElementCount) {
           stepsBackward++;
         } else {
           break;

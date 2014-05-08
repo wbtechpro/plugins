@@ -347,8 +347,9 @@ Created by WB—Tech, http://wbtech.pro/
       @masks.current = title
 
       # Search for closest frame with existing path if current has none
-      if not @$masks[@masks.current].paths[@frames.current].node.children.length
-        @findFrame()
+#      if not @$masks[@masks.current].paths[@frames.current].node.children.length
+      console.log @$masks[@masks.current].paths[@frames.current].node.childElementCount
+      @findFrame()
 
       for mask in @cfg.maskSrc
         if mask.title is title
@@ -459,7 +460,7 @@ Created by WB—Tech, http://wbtech.pro/
     stepsForward = 0
     pathsRotated.rotate(@frames.current)
     for path in pathsRotated
-      if not path.node.children.length
+      if not path.node.childElementCount
         stepsForward++
       else
         break
@@ -468,7 +469,7 @@ Created by WB—Tech, http://wbtech.pro/
     stepsBackward = 0
     pathsRotated.rotate(1)
     for path in pathsRotated by -1
-      if not path.node.children.length
+      if not path.node.childElementCount
         stepsBackward++
       else
         break
