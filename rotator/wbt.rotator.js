@@ -22,8 +22,6 @@ Created by WB—Tech, http://wbtech.pro/
  */
 
 (function() {
-  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
   (function($) {
     var WBTRotator;
     WBTRotator = function($el, params) {
@@ -682,7 +680,11 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     $.wbtIsTouch = function() {
-      return (__indexOf.call(window, 'ontouchstart') >= 0) || window.DocumentTouch && document instanceof DocumentTouch;
+      if (("ontouchstart" in window) || (window.DocumentTouch && document instanceof DocumentTouch)) {
+        return true;
+      } else {
+        return false;
+      }
     };
     $.fn.wbtRotator = function(params) {
       return new WBTRotator(this, params);

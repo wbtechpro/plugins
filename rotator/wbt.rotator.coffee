@@ -548,7 +548,7 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   $.wbtIsTouch = ->
-    ('ontouchstart' in window) or window.DocumentTouch and document instanceof DocumentTouch
+    (if ("ontouchstart" of window) or (window.DocumentTouch and document instanceof DocumentTouch) then true else false)
 
   $.fn.wbtRotator = (params) ->
     new WBTRotator(this, params)
