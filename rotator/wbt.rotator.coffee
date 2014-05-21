@@ -293,11 +293,14 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::onPointerDown = (e) ->
-    (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
+#    (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
     @$el.addClass "wbt-rotator__active"
     @pointerPressed = true and @cfg.rotateManual
-    @pointerPosition.x = e.pageX
-    @pointerPosition.y = e.pageY
+    if e.touches and e.touches.length > 1
+      @pointerPressed = false
+    else
+      @pointerPosition.x = e.pageX
+      @pointerPosition.y = e.pageY
     return
 
   WBTRotator::onPointerUp = ->
@@ -309,12 +312,21 @@ Created by WB—Tech, http://wbtech.pro/
 
   WBTRotator::onPointerMove = (e) ->
     if @pointerPressed
-      (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
+      if not e.touches or e.touches and e.touches.length == 1
+        (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
+      # TODO allow pinch zoom even after changeFrame (not working now)
+
+      if e.touches
+        x = e.touches[0].pageX
+        y = e.touches[0].pageY
+      else
+        x = e.pageX
+        y = e.pageX
 
       if @cfg.invertAxes
-        delta = e.pageY - @pointerPosition.y
+        delta = y - @pointerPosition.y
       else
-        delta = e.pageX - @pointerPosition.x
+        delta = x - @pointerPosition.x
 
       # Normalize
       delta = Math.floor(delta * @frames.total / ((if @invertAxes then @frames.size.height else @frames.size.width)))
@@ -348,7 +360,7 @@ Created by WB—Tech, http://wbtech.pro/
 
       # Search for closest frame with existing path if current has none
 #      if not @$masks[@masks.current].paths[@frames.current].node.children.length
-      console.log @$masks[@masks.current].paths[@frames.current].node.childElementCount
+#      console.log @$masks[@masks.current].paths[@frames.current].node.childElementCount
       @findFrame()
 
       for mask in @cfg.maskSrc
@@ -367,6 +379,11 @@ Created by WB—Tech, http://wbtech.pro/
         if not @cfg.fogging
           @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
         @masks.current = title
+
+        # Search for closest frame with existing path if current has none
+        # if not @$masks[@masks.current].paths[@frames.current].node.children.length
+        @findFrame()
+
         for mask in @cfg.maskSrc
           if mask.title is title
             colorRGB = Snap.getRGB mask.color

@@ -358,15 +358,14 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.onPointerDown = function(e) {
-      if (e.preventDefault) {
-        e.preventDefault();
-      } else {
-        e.returnValue = false;
-      }
       this.$el.addClass("wbt-rotator__active");
       this.pointerPressed = true && this.cfg.rotateManual;
-      this.pointerPosition.x = e.pageX;
-      this.pointerPosition.y = e.pageY;
+      if (e.touches && e.touches.length > 1) {
+        this.pointerPressed = false;
+      } else {
+        this.pointerPosition.x = e.pageX;
+        this.pointerPosition.y = e.pageY;
+      }
     };
     WBTRotator.prototype.onPointerUp = function() {
       if (this.pointerPressed) {
@@ -376,17 +375,26 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.onPointerMove = function(e) {
-      var delta;
+      var delta, x, y;
       if (this.pointerPressed) {
-        if (e.preventDefault) {
-          e.preventDefault();
+        if (!e.touches || e.touches && e.touches.length === 1) {
+          if (e.preventDefault) {
+            e.preventDefault();
+          } else {
+            e.returnValue = false;
+          }
+        }
+        if (e.touches) {
+          x = e.touches[0].pageX;
+          y = e.touches[0].pageY;
         } else {
-          e.returnValue = false;
+          x = e.pageX;
+          y = e.pageX;
         }
         if (this.cfg.invertAxes) {
-          delta = e.pageY - this.pointerPosition.y;
+          delta = y - this.pointerPosition.y;
         } else {
-          delta = e.pageX - this.pointerPosition.x;
+          delta = x - this.pointerPosition.x;
         }
         delta = Math.floor(delta * this.frames.total / (this.invertAxes ? this.frames.size.height : this.frames.size.width));
         if (this.cfg.invertMouse) {
@@ -416,7 +424,6 @@ Created by WB—Tech, http://wbtech.pro/
       title = el ? el.data("title") : $(e.target).data("title");
       if (!this.masks.current) {
         this.masks.current = title;
-        console.log(this.$masks[this.masks.current].paths[this.frames.current].node.childElementCount);
         this.findFrame();
         _ref = this.cfg.maskSrc;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -442,6 +449,7 @@ Created by WB—Tech, http://wbtech.pro/
             });
           }
           this.masks.current = title;
+          this.findFrame();
           _ref1 = this.cfg.maskSrc;
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             mask = _ref1[_j];
