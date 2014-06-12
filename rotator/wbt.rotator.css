@@ -1,4 +1,4 @@
-.wbt-rotator {overflow:hidden;position:relative;margin:20px 0;background-color:#fff;box-shadow:0 0 20px rgba(0,0,0,0.5);-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
+.wbt-rotator {overflow:hidden;position:relative;max-width:1500px;margin:20px auto;background-color:#161616;box-shadow:0 0 20px rgba(0,0,0,0.5);-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 .wbt-rotator-image {display:none;position:relative;z-index:1;}
 .wbt-rotator-image__active {display:block;}
 .wbt-rotator-cover {position:relative;z-index:4;display:block;opacity:0.5;cursor:pointer;}
@@ -6,20 +6,33 @@
 .wbt-rotator-loader {position:absolute;z-index:9;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;overflow:hidden;background:url("preload-sprite.png") center top no-repeat;}
 .wbt-rotator__loaded .wbt-rotator-loader {display:none;}
 .wbt-rotator-mask {position:absolute;z-index:3;left:0;top:0;width:100%;height:100%;}
-.wbt-rotator-mask__active:after {content:"";position:absolute;z-index:2;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.4);}
-.wbt-rotator-title {display:none;position:absolute;z-index:3;left:20px;bottom:20px;text-align:right;font-size:1.35em;line-height:1.5;color:#fff;}
-.wbt-rotator-mask__active .wbt-rotator-title {display:block;}
-.wbt-rotator-legend {display:none;position:absolute;z-index:8;right:20px;top:20px;margin:0;padding:0;font-size:1.35em;line-height:1.5;color:#fff;list-style:none;}
-.wbt-rotator-legend_item {cursor:pointer;padding:0 0 0 20px;}
-.wbt-rotator-legend_item:hover,
-.wbt-rotator-legend_item__hover {color:#999;}
-.wbt-rotator-legend_item__active,
-.wbt-rotator-legend_item__active:hover {color:#666;}
+.wbt-rotator-mask__active .wbt-rotator-content:after {content:"";position:absolute;z-index:2;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.4);}
+.wbt-rotator-content {position:relative;float:left;border-right:1px solid #393939;}
+.wbt-rotator-legend {display:none;overflow:hidden;margin:0;padding:40px;color:#999999;}
+.wbt-rotator-legend a {color:#fff;}
+.wbt-rotator-legend a:hover {text-decoration:none;}
 .wbt-rotator__loaded .wbt-rotator-legend {display:block;}
+.wbt-rotator-heading {position:relative;float:left;width:30%;max-width:192px;padding:0 46px 0 0;margin:0 5% 10px 0;font-size:20px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+.wbt-rotator-titles_list {clear:left;float:left;width:30%;max-width:192px;margin:4px 5% 0 0;padding:0;font-size:16px;line-height:1;list-style:none;}
+.wbt-rotator-titles_item {position:relative;margin:0 0 16px;padding:0 22px 0 0;overflow:hidden;cursor:pointer;}
+.wbt-rotator-titles_item:after {display:block;position:relative;top:1px;padding:6px 0 0 0;white-space:nowrap;overflow:hidden;font-size:10px;direction:rtl;content:". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .";}
+.wbt-rotator-titles_item:hover,
+.wbt-rotator-titles_item__hover {color:#bbb;}
+.wbt-rotator-titles_item__active,
+.wbt-rotator-titles_item__active:hover {color:#fff;}
+.wbt-rotator-titles_text {float:left;max-width:100%;padding:0 4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wbt-rotator-titles_icon {position:absolute;width:16px;height:16px;right:0;top:0;background-color:#999;}
+.wbt-rotator-descriptions_list {float:left;width:65%;max-width:300px;margin:0;padding:0;font-size:14px;line-height:25px;list-style:none;}
+.wbt-rotator-descriptions_item {display:none;}
+.wbt-rotator-descriptions_item__active {display:block;}
+@media only screen and (max-width: 1276px) {
+    .wbt-rotator-titles_list {float:none;width:auto;max-width:none;margin:0;}
+    .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;}
+}
 
 /* Cursors*/
 .wbt-rotator__loaded {cursor:default;}
 .wbt-rotator__loaded.wbt-rotator__horizontal {cursor:ew-resize;}
 .wbt-rotator__loaded.wbt-rotator__vertical {cursor:ns-resize;}
-.wbt-rotator__loaded.wbt-rotator__grab {cursor:hand;cursor:pointer;cursor:grab!important;cursor:-moz-grab;cursor:-webkit-grab;cursor:url(openhand.cur), pointer!important;}
-.wbt-rotator__loaded.wbt-rotator__grab.wbt-rotator__active {cursor:hand;cursor:pointer;cursor:grabbing!important;cursor:-moz-grabbing;cursor:-webkit-grabbing;cursor:url(closedhand.cur), pointer!important;}
+.wbt-rotator__loaded.wbt-rotator__grab .wbt-rotator-content {cursor:hand;cursor:pointer;cursor:grab!important;cursor:-moz-grab;cursor:-webkit-grab;cursor:url(openhand.cur), pointer!important;}
+.wbt-rotator__loaded.wbt-rotator__grab.wbt-rotator__active .wbt-rotator-content {cursor:hand;cursor:pointer;cursor:grabbing!important;cursor:-moz-grabbing;cursor:-webkit-grabbing;cursor:url(closedhand.cur), pointer!important;}
