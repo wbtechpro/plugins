@@ -42,7 +42,7 @@
         },
         parietal: {
           title: "Parietal bones",
-          description: "The <em>parietal bones</em> form the upper lateral surfaces of the skull. They have <a href='#'>four borders:</a> frontal, occipital, squamous and sagittal. These borders connect <strong>parietal bones</strong> with the frontal, occipital, temporal bones and with each other, respectively."
+          description: "The parietal bones form the upper lateral surfaces of the skull. They have <a href='#'>four borders:</a> frontal, occipital, squamous and sagittal. These borders connect <strong>parietal bones</strong> with the frontal, occipital, temporal bones and with each other, respectively."
         },
         sphenoid: {
           title: "Sphenoid bone",

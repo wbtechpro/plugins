@@ -12,20 +12,23 @@
 .wbt-rotator-legend a {color:#fff;}
 .wbt-rotator-legend a:hover {text-decoration:none;}
 .wbt-rotator__loaded .wbt-rotator-legend {display:block;}
-.wbt-rotator-heading {position:relative;float:left;width:30%;max-width:192px;padding:0 46px 0 0;margin:0 5% 10px 0;font-size:20px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
-.wbt-rotator-titles_list {clear:left;float:left;width:30%;max-width:192px;margin:4px 5% 0 0;padding:0;font-size:16px;line-height:1;list-style:none;}
-.wbt-rotator-titles_item {position:relative;margin:0 0 16px;padding:0 22px 0 0;overflow:hidden;cursor:pointer;}
-.wbt-rotator-titles_item:after {display:block;position:relative;top:1px;padding:6px 0 0 0;white-space:nowrap;overflow:hidden;font-size:10px;direction:rtl;content:". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .";}
+.wbt-rotator-heading {position:relative;float:left;width:30%;max-width:192px;padding:0 46px 0 0;margin:0 0 10px 0;font-size:19px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+.wbt-rotator-heading_text {}
+.wbt-rotator-titles_list {position:relative;clear:left;float:left;width:30%;max-width:194px;margin:0;padding:0;font-size:15px;line-height:16px;list-style:none;}
+.wbt-rotator-titles_item {position:relative;margin:0;padding:6px 24px 8px 0;overflow:hidden;cursor:pointer;}
+.wbt-rotator-titles_item:after {display:block;position:relative;top:1px;white-space:nowrap;overflow:hidden;font-size:10px;direction:rtl;content:". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .";}
 .wbt-rotator-titles_item:hover,
 .wbt-rotator-titles_item__hover {color:#bbb;}
 .wbt-rotator-titles_item__active,
 .wbt-rotator-titles_item__active:hover {color:#fff;}
 .wbt-rotator-titles_text {float:left;max-width:100%;padding:0 4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.wbt-rotator-titles_icon {position:absolute;width:16px;height:16px;right:0;top:0;background-color:#999;}
-.wbt-rotator-descriptions_list {float:left;width:65%;max-width:300px;margin:0;padding:0;font-size:14px;line-height:25px;list-style:none;}
+.wbt-rotator-titles_icon {position:absolute;width:14px;height:14px;right:3px;top:4px;background-color:#999;}
+.wbt-rotator-titles_item__active .wbt-rotator-titles_icon {top:1px;right:0;border:3px solid #fff;border-radius:2px;}
+.wbt-rotator-descriptions_list {float:left;width:60%;max-width:280px;margin:0 0 0 10%;padding:0;font-size:13px;line-height:25px;list-style:none;}
 .wbt-rotator-descriptions_item {display:none;}
 .wbt-rotator-descriptions_item__active {display:block;}
 @media only screen and (max-width: 1276px) {
+    .wbt-rotator-heading {float:none;width:auto;max-width:none;margin-right:0;}
     .wbt-rotator-titles_list {float:none;width:auto;max-width:none;margin:0;}
     .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;}
 }

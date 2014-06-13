@@ -31,7 +31,7 @@ $.wbtRotator.l10n =
         description: "Palatine bones are involved in the formation of the hard palate, orbits and pterygopalatine fossa. Palatine bones divided into horizontal and perpendicular plates and have three processes: orbital, sphenoidal and pyramidal."
       parietal:
         title: "Parietal bones"
-        description: "The <em>parietal bones</em> form the upper lateral surfaces of the skull. They have <a href='#'>four borders:</a> frontal, occipital, squamous and sagittal. These borders connect <strong>parietal bones</strong> with the frontal, occipital, temporal bones and with each other, respectively."
+        description: "The parietal bones form the upper lateral surfaces of the skull. They have <a href='#'>four borders:</a> frontal, occipital, squamous and sagittal. These borders connect <strong>parietal bones</strong> with the frontal, occipital, temporal bones and with each other, respectively."
       sphenoid:
         title: "Sphenoid bone"
         description: "Sphenoid bone participates in formation of the basal and lateral parts of the skull, as well as orbits and a number of sinuses and fossae. This bone has a body, two greater wings, two lesser wings and pterygoid processes. On the upper surface of the sphenoid body has a recess - sella turcica which houses the pituitary gland. The space between greater and lower wings of sphenoid is called superior orbital fissure. It connects orbits with the cranial cavity."

@@ -25,7 +25,7 @@ Created by WB—Tech, http://wbtech.pro/
   (function($) {
     var WBTRotator;
     WBTRotator = function($el, params) {
-      var $legendDescription, $legendTitle, $sel, mask, _i, _j, _len, _len1, _ref, _ref1;
+      var $legendDescription, $legendTitle, lang, mask, tplLanguages, _i, _len, _ref;
       this.cfg = $.extend({}, WBTRotator.prototype.defaults, params);
       this.cfg.frameSrc = this.createSrcArray(this.cfg.src);
       this.cfg.frameCover = this.cfg.cover;
@@ -56,6 +56,7 @@ Created by WB—Tech, http://wbtech.pro/
         total: this.cfg.maskSrc.length * this.frames.total,
         loaded: 0
       };
+      this.$legendHeading = {};
       this.$legendTitles = {};
       this.$legendDescriptions = {};
       this.pointerPressed = false;
@@ -69,16 +70,6 @@ Created by WB—Tech, http://wbtech.pro/
       }
       if (!this.cfg.frameSrc) {
         return $.wbtError("Specify 'src' in $().wbtRotator() call.");
-      }
-      if ($.wbtRotator.l10n != null) {
-        _ref = this.cfg.maskSrc;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          mask = _ref[_i];
-          if ((mask.title == null) && mask.titleId) {
-            mask.title = $.wbtRotator.l10n[this.cfg.language].masks[mask.titleId].title;
-            mask.description = $.wbtRotator.l10n[this.cfg.language].masks[mask.titleId].description;
-          }
-        }
       }
       this.$loader = $("<span></span>").attr({
         "class": "wbt-rotator-loader"
@@ -123,35 +114,43 @@ Created by WB—Tech, http://wbtech.pro/
         this.$maskLegend = $("<div></div>").attr({
           "class": "wbt-rotator-legend"
         }).appendTo(this.$el);
-        this.$maskHeading = $("<div></div>").attr({
+        this.$legendHeading = $("<div><span class='wbt-rotator-heading_text'></span></div>").attr({
           "class": "wbt-rotator-heading"
-        }).appendTo(this.$maskLegend).text($.wbtRotator.l10n[this.cfg.language].heading);
+        }).appendTo(this.$maskLegend);
         this.$maskTitles = $("<ul></ul>").attr({
           "class": "wbt-rotator-titles_list"
         }).appendTo(this.$maskLegend);
         this.$maskDescriptions = $("<ul></ul>").attr({
           "class": "wbt-rotator-descriptions_list"
         }).appendTo(this.$maskLegend);
-        _ref1 = this.cfg.maskSrc;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          mask = _ref1[_j];
-          $legendTitle = $("<li></li>").attr("class", "wbt-rotator-titles_item").appendTo(this.$maskTitles).data("title", mask.title);
-          $("<span></span>").attr("class", "wbt-rotator-titles_text").appendTo($legendTitle).html(mask.title);
-          $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo($legendTitle).css("background-color", mask.color || "#fff");
-          $legendDescription = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(this.$maskDescriptions).data("title", mask.title).html(mask.description);
-          this.$legendTitles[mask.title] = $legendTitle;
-          this.$legendDescriptions[mask.title] = $legendDescription;
+        _ref = this.cfg.maskSrc;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          mask = _ref[_i];
+          $legendTitle = $("<li></li>").attr("class", "wbt-rotator-titles_item").appendTo(this.$maskTitles).data("title", mask.titleId);
+          $("<span></span>").attr("class", "wbt-rotator-titles_text").appendTo($legendTitle).html(mask.titleId);
+          $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo($legendTitle).css({
+            "background-color": mask.color || "#fff"
+          });
+          $legendDescription = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(this.$maskDescriptions).data("title", mask.titleId).html(mask.titleId);
+          this.$legendTitles[mask.titleId] = $legendTitle;
+          this.$legendDescriptions[mask.titleId] = $legendDescription;
         }
         this.$maskTitles.on("" + ($.wbtIsTouch() ? "singleTap" : "click"), "li", $.proxy(this.onPathClick, this, null));
         if (!$.wbtIsTouch()) {
           this.$maskTitles.on("mouseover", "li", $.proxy(this.onPathOver, this, null));
           this.$maskTitles.on("mouseout", "li", $.proxy(this.onPathOut, this, null));
         }
-        this.$maskTitles = $("<select><option selected>en</option><option>ru</option></select>").attr({
-          "class": "wbt-rotator-titles_list"
-        }).prependTo(this.$maskHeading);
-        $sel = $("select").wbtFormStyler();
-        $sel.parent().find(".wbt-input-select_options").css("background-color", this.$el.css("background-color"));
+        if ($.wbtRotator.l10n != null) {
+          tplLanguages = "";
+          for (lang in $.wbtRotator.l10n) {
+            tplLanguages += "<option " + (lang === this.cfg.language ? "selected" : void 0) + " value='" + lang + "'>" + lang + "</option>";
+          }
+          $("<select>" + tplLanguages + "</select>").prependTo(this.$legendHeading).wbtFormStyler().on("change", $.proxy(this.changeLocale, this)).parent().find(".wbt-input-select_options").css({
+            "background-color": this.$el.css("background-color"),
+            "box-shadow": "0 0 1px 1px " + (this.$el.css("background-color"))
+          });
+          this.updateLocalization();
+        }
       }
     };
     WBTRotator.prototype.defaults = {
@@ -255,7 +254,7 @@ Created by WB—Tech, http://wbtech.pro/
                 };
               };
             })(this);
-            _results1.push($.get(maskSrc.srcArray[i], getCallback(this.cfg.maskSrc[index].title, i)));
+            _results1.push($.get(maskSrc.srcArray[i], getCallback(this.cfg.maskSrc[index].titleId, i)));
           }
           return _results1;
         }).call(this));
@@ -321,7 +320,7 @@ Created by WB—Tech, http://wbtech.pro/
         _ref = this.cfg.maskSrc;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
-          _ref1 = this.$masks[mask.title].paths;
+          _ref1 = this.$masks[mask.titleId].paths;
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             path = _ref1[_j];
             path.appendTo(this.maskSVG);
@@ -444,7 +443,7 @@ Created by WB—Tech, http://wbtech.pro/
         _ref = this.cfg.maskSrc;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
-          if (mask.title === title) {
+          if (mask.titleId === title) {
             colorRGB = Snap.getRGB(mask.color);
             this.$masks[this.masks.current].paths[this.frames.current].attr({
               fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
@@ -466,7 +465,7 @@ Created by WB—Tech, http://wbtech.pro/
           _ref1 = this.cfg.maskSrc;
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             mask = _ref1[_j];
-            if (mask.title === title) {
+            if (mask.titleId === title) {
               colorRGB = Snap.getRGB(mask.color);
               this.$masks[this.masks.current].paths[this.frames.current].attr({
                 fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
@@ -482,8 +481,8 @@ Created by WB—Tech, http://wbtech.pro/
         _ref2 = this.cfg.maskSrc;
         for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
           mask = _ref2[_k];
-          this.$legendTitles[mask.title].toggleClass("wbt-rotator-titles_item__active", mask.title === this.masks.current);
-          this.$legendDescriptions[mask.title].toggleClass("wbt-rotator-descriptions_item__active", mask.title === this.masks.current);
+          this.$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__active", mask.titleId === this.masks.current);
+          this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId === this.masks.current);
         }
       }
       if (!this.cfg.fogging && !this.masks.current || this.cfg.fogging) {
@@ -495,15 +494,15 @@ Created by WB—Tech, http://wbtech.pro/
       _results = [];
       for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
         mask = _ref3[_l];
-        if (this.masks.current && mask.title !== this.masks.current) {
-          _results.push(this.$masks[mask.title].images[this.frames.current].attr({
+        if (this.masks.current && mask.titleId !== this.masks.current) {
+          _results.push(this.$masks[mask.titleId].images[this.frames.current].attr({
             display: "none"
           }));
         } else {
-          this.$masks[mask.title].paths[this.frames.current].attr({
+          this.$masks[mask.titleId].paths[this.frames.current].attr({
             display: ""
           });
-          _results.push(this.$masks[mask.title].images[this.frames.current].attr({
+          _results.push(this.$masks[mask.titleId].images[this.frames.current].attr({
             display: ""
           }));
         }
@@ -516,9 +515,9 @@ Created by WB—Tech, http://wbtech.pro/
       _ref = this.cfg.maskSrc;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         mask = _ref[_i];
-        if (mask.title === title && mask.title !== this.masks.current) {
+        if (mask.titleId === title && mask.titleId !== this.masks.current) {
           colorRGB = Snap.getRGB(mask.color);
-          this.$masks[mask.title].paths[this.frames.current].attr({
+          this.$masks[mask.titleId].paths[this.frames.current].attr({
             fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
           });
         }
@@ -528,8 +527,8 @@ Created by WB—Tech, http://wbtech.pro/
         _results = [];
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           mask = _ref1[_j];
-          this.$legendTitles[mask.title].toggleClass("wbt-rotator-titles_item__hover", mask.title === title);
-          _results.push(this.$legendDescriptions[mask.title].toggleClass("wbt-rotator-descriptions_item__hover", mask.title === title));
+          this.$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__hover", mask.titleId === title);
+          _results.push(this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__hover", mask.titleId === title));
         }
         return _results;
       }
@@ -547,8 +546,8 @@ Created by WB—Tech, http://wbtech.pro/
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
-          this.$legendTitles[mask.title].removeClass("wbt-rotator-titles_item__hover");
-          _results.push(this.$legendDescriptions[mask.title].removeClass("wbt-rotator-descriptions_item__hover"));
+          this.$legendTitles[mask.titleId].removeClass("wbt-rotator-titles_item__hover");
+          _results.push(this.$legendDescriptions[mask.titleId].removeClass("wbt-rotator-descriptions_item__hover"));
         }
         return _results;
       }
@@ -613,7 +612,6 @@ Created by WB—Tech, http://wbtech.pro/
         return function(stepsRemaining, direction) {
           _this.frames.current += direction;
           _this.frames.current %= _this.frames.total;
-          console.log(_this.frames.current);
           _this.changeFrame(_this.frames.current);
           if (stepsRemaining > 1) {
             return setTimeout(function() {
@@ -656,24 +654,24 @@ Created by WB—Tech, http://wbtech.pro/
       _ref = this.cfg.maskSrc;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         mask = _ref[_i];
-        this.$masks[mask.title].paths[this.frames.previous].attr({
+        this.$masks[mask.titleId].paths[this.frames.previous].attr({
           display: "none",
           fill: "rgba(255,255,255,0)"
         });
-        this.$masks[mask.title].images[this.frames.previous].attr({
+        this.$masks[mask.titleId].images[this.frames.previous].attr({
           display: "none"
         });
-        this.$masks[mask.title].paths[newIndex].attr({
+        this.$masks[mask.titleId].paths[newIndex].attr({
           display: ""
         });
-        if (!this.cfg.fogging && this.masks.current === mask.title) {
+        if (!this.cfg.fogging && this.masks.current === mask.titleId) {
           colorRGB = Snap.getRGB(mask.color);
-          this.$masks[mask.title].paths[newIndex].attr({
+          this.$masks[mask.titleId].paths[newIndex].attr({
             fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
           });
         }
-        if (this.masks.current && this.masks.current === mask.title) {
-          this.$masks[mask.title].images[newIndex].attr({
+        if (this.masks.current && this.masks.current === mask.titleId) {
+          this.$masks[mask.titleId].images[newIndex].attr({
             display: ""
           });
         }
@@ -695,6 +693,38 @@ Created by WB—Tech, http://wbtech.pro/
       })(this)), this.cfg.rotateAutoSpeed);
     };
     WBTRotator.prototype.stopAutoRotate = function() {};
+    WBTRotator.prototype.changeLocale = function(e) {
+      this.cfg.language = $(e.target).val();
+      return this.updateLocalization();
+    };
+    WBTRotator.prototype.updateLocalization = function() {
+      var $el, titleId, val, _ref, _ref1, _results;
+      val = $.wbtRotator.l10n[this.cfg.language].heading;
+      if (val === "{{EN}}") {
+        val = $.wbtRotator.l10n["EN"].heading;
+      }
+      this.$legendHeading.children("span").text(val);
+      _ref = this.$legendTitles;
+      for (titleId in _ref) {
+        $el = _ref[titleId];
+        val = $.wbtRotator.l10n[this.cfg.language].masks[titleId].title;
+        if (val === "{{EN}}") {
+          val = $.wbtRotator.l10n["en"].masks[titleId].title;
+        }
+        $el.children("span").eq(0).text(val);
+      }
+      _ref1 = this.$legendDescriptions;
+      _results = [];
+      for (titleId in _ref1) {
+        $el = _ref1[titleId];
+        val = $.wbtRotator.l10n[this.cfg.language].masks[titleId].description;
+        if (val === "{{EN}}") {
+          val = $.wbtRotator.l10n["EN"].masks[titleId].description;
+        }
+        _results.push($el.html(val));
+      }
+      return _results;
+    };
     $.wbtError = function(error) {
       if (window.console && window.console.error) {
         console.error(error);
