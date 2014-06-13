@@ -12,7 +12,7 @@
 .wbt-rotator-legend a {color:#fff;}
 .wbt-rotator-legend a:hover {text-decoration:none;}
 .wbt-rotator__loaded .wbt-rotator-legend {display:block;}
-.wbt-rotator-heading {position:relative;float:left;width:30%;max-width:192px;padding:0 46px 0 0;margin:0 0 10px 0;font-size:19px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+.wbt-rotator-heading {position:relative;float:left;width:30%;max-width:192px;padding:0 46px 0 0;margin:0 0 10px 0;font-size:19px;line-height:25px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
 .wbt-rotator-heading_text {}
 .wbt-rotator-titles_list {position:relative;clear:left;float:left;width:30%;max-width:194px;margin:0;padding:0;font-size:15px;line-height:16px;list-style:none;}
 .wbt-rotator-titles_item {position:relative;margin:0;padding:6px 24px 8px 0;overflow:hidden;cursor:pointer;}

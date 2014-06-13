@@ -25,12 +25,17 @@ Created by WB—Tech, http://wbtech.pro/
   (function($) {
     var WBTRotator;
     WBTRotator = function($el, params) {
-      var $legendDescription, $legendTitle, lang, mask, tplLanguages, _i, _len, _ref;
+      var $legendDescription, $legendTitle, lang, mask, tplLanguages, _i, _j, _len, _len1, _ref, _ref1;
       this.cfg = $.extend({}, WBTRotator.prototype.defaults, params);
       this.cfg.frameSrc = this.createSrcArray(this.cfg.src);
       this.cfg.frameCover = this.cfg.cover;
       this.cfg.frameFirst = this.cfg.first;
       this.cfg.maskSrc = this.cfg.masks;
+      _ref = this.cfg.maskSrc;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        mask = _ref[_i];
+        mask.titleId = mask.id;
+      }
       this.cfg.language = this.cfg.language.toUpperCase();
       this.$el = $el.addClass("wbt-rotator");
       this.$elContent = $("<div></div>").attr({
@@ -123,9 +128,9 @@ Created by WB—Tech, http://wbtech.pro/
         this.$maskDescriptions = $("<ul></ul>").attr({
           "class": "wbt-rotator-descriptions_list"
         }).appendTo(this.$maskLegend);
-        _ref = this.cfg.maskSrc;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          mask = _ref[_i];
+        _ref1 = this.cfg.maskSrc;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          mask = _ref1[_j];
           $legendTitle = $("<li></li>").attr("class", "wbt-rotator-titles_item").appendTo(this.$maskTitles).data("title", mask.titleId);
           $("<span></span>").attr("class", "wbt-rotator-titles_text").appendTo($legendTitle).html(mask.titleId);
           $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo($legendTitle).css({

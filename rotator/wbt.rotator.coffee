@@ -25,6 +25,8 @@ Created by WB—Tech, http://wbtech.pro/
     @cfg.frameCover = @cfg.cover # Alias
     @cfg.frameFirst = @cfg.first # Alias
     @cfg.maskSrc = @cfg.masks # Alias
+    for mask in @cfg.maskSrc
+      mask.titleId = mask.id
     @cfg.language = @cfg.language.toUpperCase()
 
     @$el = $el.addClass("wbt-rotator")
