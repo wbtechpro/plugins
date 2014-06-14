@@ -24,7 +24,7 @@
 .wbt-rotator-titles_text {float:left;max-width:100%;padding:0 4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wbt-rotator-titles_icon {position:absolute;width:14px;height:14px;right:3px;top:4px;background-color:#999;}
 .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {top:1px;right:0;border:3px solid #fff;border-radius:2px;}
-.wbt-rotator-descriptions_list {float:left;width:60%;max-width:280px;margin:0 0 0 10%;padding:0;font-size:13px;line-height:25px;list-style:none;}
+.wbt-rotator-descriptions_list {position:relative;float:left;width:60%;max-width:280px;margin:0 0 0 10%;padding:0;font-size:13px;line-height:25px;list-style:none;}
 .wbt-rotator-descriptions_item {display:none;}
 .wbt-rotator-descriptions_item__active {display:block;}
 @media only screen and (max-width: 1276px) {

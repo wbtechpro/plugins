@@ -154,7 +154,7 @@ Created by WB—Tech, http://wbtech.pro/
             "background-color": this.$el.css("background-color"),
             "box-shadow": "0 0 1px 1px " + (this.$el.css("background-color"))
           });
-          this.updateLocalization();
+          this.updateLocalization(true);
         }
       }
     };
@@ -702,8 +702,32 @@ Created by WB—Tech, http://wbtech.pro/
       this.cfg.language = $(e.target).val();
       return this.updateLocalization();
     };
-    WBTRotator.prototype.updateLocalization = function() {
-      var $el, titleId, val, _ref, _ref1, _results;
+    WBTRotator.prototype.updateLocalization = function(isFirstTime) {
+      var $descriptionsActive, $descriptionsList, $descriptionsPrevious, $el, $titlesItems, $titlesItemsActive, $titlesItemsPrevious, $titlesList, animationTime, titleId, val, _ref, _ref1;
+      animationTime = isFirstTime ? 0 : 500;
+      $titlesList = $(".wbt-rotator-titles_list");
+      $titlesItems = $(".wbt-rotator-titles_item");
+      $titlesItemsActive = $(".wbt-rotator-titles_item__active");
+      $titlesItemsPrevious = $titlesItems.clone().appendTo($titlesList);
+      $titlesItemsPrevious.each(function(index, el) {
+        return $(el).css({
+          opacity: "0",
+          position: "absolute",
+          left: "0",
+          right: "0",
+          top: index * 30 + "px"
+        });
+      });
+      $descriptionsList = $(".wbt-rotator-descriptions_list");
+      $descriptionsActive = $(".wbt-rotator-descriptions_item__active");
+      $descriptionsPrevious = $descriptionsActive.clone().appendTo($descriptionsList);
+      $descriptionsPrevious.css({
+        opacity: "0",
+        position: "absolute",
+        left: "0",
+        right: "0",
+        top: "0"
+      });
       val = $.wbtRotator.l10n[this.cfg.language].heading;
       if (val === "{{EN}}") {
         val = $.wbtRotator.l10n["EN"].heading;
@@ -719,16 +743,49 @@ Created by WB—Tech, http://wbtech.pro/
         $el.children("span").eq(0).text(val);
       }
       _ref1 = this.$legendDescriptions;
-      _results = [];
       for (titleId in _ref1) {
         $el = _ref1[titleId];
         val = $.wbtRotator.l10n[this.cfg.language].masks[titleId].description;
         if (val === "{{EN}}") {
           val = $.wbtRotator.l10n["EN"].masks[titleId].description;
         }
-        _results.push($el.html(val));
+        $el.html(val);
       }
-      return _results;
+      $titlesItems.sort(function(a, b) {
+        if ($(a).text() > $(b).text()) {
+          return 1;
+        }
+        if ($(a).text() < $(b).text()) {
+          return -1;
+        }
+        return 0;
+      });
+      $titlesItems.appendTo($titlesList);
+      $titlesItems.css({
+        opacity: 0
+      }).animate({
+        opacity: "1"
+      }, animationTime);
+      $titlesItemsPrevious.css({
+        opacity: 1
+      }).animate({
+        opacity: "0"
+      }, animationTime, function() {
+        return $titlesItemsPrevious.remove();
+      });
+      $descriptionsActive.css({
+        opacity: 0
+      }).animate({
+        opacity: "1"
+      }, animationTime);
+      $descriptionsPrevious.css({
+        opacity: 1
+      }).animate({
+        opacity: "0"
+      }, animationTime, function() {
+        return $descriptionsPrevious.remove();
+      });
+      return console.log($titlesItemsActive.index());
     };
     $.wbtError = function(error) {
       if (window.console && window.console.error) {

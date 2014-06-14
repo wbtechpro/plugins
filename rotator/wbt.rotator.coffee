@@ -150,7 +150,7 @@ Created by WB—Tech, http://wbtech.pro/
           .on("change", $.proxy(@changeLocale, this))
           .parent().find(".wbt-input-select_options").css("background-color": @$el.css("background-color"), "box-shadow": "0 0 1px 1px #{@$el.css("background-color")}")
 
-        @updateLocalization()
+        @updateLocalization(true)
     return
 
   WBTRotator::defaults =
@@ -598,7 +598,29 @@ Created by WB—Tech, http://wbtech.pro/
     @cfg.language = $(e.target).val()
     @updateLocalization()
 
-  WBTRotator::updateLocalization = ->
+  WBTRotator::updateLocalization = (isFirstTime)->
+    animationTime = if isFirstTime then 0 else 500
+    $titlesList = $(".wbt-rotator-titles_list")
+    $titlesItems = $(".wbt-rotator-titles_item")
+    $titlesItemsActive = $(".wbt-rotator-titles_item__active")
+    $titlesItemsPrevious = $titlesItems.clone().appendTo $titlesList
+    $titlesItemsPrevious.each (index, el)->
+      $(el).css
+        opacity: "0"
+        position: "absolute"
+        left: "0"
+        right: "0"
+        top: index * 30 + "px"
+    $descriptionsList = $(".wbt-rotator-descriptions_list")
+    $descriptionsActive = $(".wbt-rotator-descriptions_item__active")
+    $descriptionsPrevious = $descriptionsActive.clone().appendTo $descriptionsList
+    $descriptionsPrevious.css
+      opacity: "0"
+      position: "absolute"
+      left: "0"
+      right: "0"
+      top: "0"
+
     # Change heading
     val = $.wbtRotator.l10n[@cfg.language].heading
     val = $.wbtRotator.l10n["EN"].heading if val is "{{EN}}"
@@ -615,6 +637,31 @@ Created by WB—Tech, http://wbtech.pro/
       val = $.wbtRotator.l10n[@cfg.language].masks[titleId].description
       val = $.wbtRotator.l10n["EN"].masks[titleId].description if val is "{{EN}}"
       $el.html(val)
+
+    # Sorting
+    # Create copy of previous state
+
+    # Do the sorting
+    $titlesItems.sort (a, b)->
+      return 1 if $(a).text() > $(b).text()
+      return -1 if $(a).text() < $(b).text()
+      return 0
+    $titlesItems.appendTo $titlesList
+
+    # Animate sort change
+    $titlesItems.css(opacity: 0).animate {opacity: "1"}, animationTime
+    $titlesItemsPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
+      $titlesItemsPrevious.remove()
+
+    $descriptionsActive.css(opacity: 0).animate {opacity: "1"}, animationTime
+    $descriptionsPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
+      $descriptionsPrevious.remove()
+
+  #    if $titlesItemsActive.index() isnt -1
+#    $titlesItemsPrevious
+    console.log $titlesItemsActive.index()
+#    else
+#      a=a
 
   $.wbtError = (error) ->
     console.error error  if window.console and window.console.error
