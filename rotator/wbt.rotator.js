@@ -25,7 +25,7 @@ Created by WB—Tech, http://wbtech.pro/
   (function($) {
     var WBTRotator;
     WBTRotator = function($el, params) {
-      var $legendDescription, $legendTitle, lang, mask, tplLanguages, _i, _j, _len, _len1, _ref, _ref1;
+      var $legendDescription, $legendTitle, $style, cssText, lang, mask, tplLanguages, _i, _j, _len, _len1, _ref, _ref1;
       this.cfg = $.extend({}, WBTRotator.prototype.defaults, params);
       this.cfg.frameSrc = this.createSrcArray(this.cfg.src);
       this.cfg.frameCover = this.cfg.cover;
@@ -157,6 +157,21 @@ Created by WB—Tech, http://wbtech.pro/
           this.updateLocalization(true);
         }
       }
+      if (this.cfg.skin) {
+        if (this.cfg.skin.background) {
+          this.$el.css({
+            "color": this.cfg.skin.text,
+            "background-color": this.cfg.skin.background
+          });
+        }
+      }
+      cssText = ".wbt-rotator {color:" + this.cfg.skin.text + " !important;background-color:" + this.cfg.skin.background + " !important;} .wbt-rotator-titles_item:hover, .wbt-rotator-titles_item__hover, .wbt-rotator .wbt-input-select_item:hover {color:" + this.cfg.skin.hover + " !important;} .wbt-rotator-titles_item__active, .wbt-rotator-titles_item__active:hover, .wbt-rotator-legend a, .wbt-rotator .wbt-input-select__active .wbt-input-select_button, .wbt-rotator .wbt-input-select_item__active, .wbt-rotator .wbt-input-select_item__active:hover, .wbt-rotator .wbt-input-select_selected:hover {color:" + this.cfg.skin.active + " !important;} .wbt-rotator .wbt-input-select_selected, .wbt-rotator .wbt-input-select_list {border:1px solid " + this.cfg.skin.text + ";} .wbt-rotator .wbt-input-select_selected:hover, .wbt-rotator .wbt-input-select_list:hover, .wbt-rotator .wbt-input-select__active .wbt-input-select_list {border:1px solid " + this.cfg.skin.active + ";} .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {border-color:" + this.cfg.skin.active + ";}";
+      $style = $("<style></style>").prependTo(this.$el);
+      if ($style[0].styleSheet) {
+        $style[0].styleSheet.cssText = cssText;
+      } else {
+        $style.html(cssText);
+      }
     };
     WBTRotator.prototype.defaults = {
       language: "EN",
@@ -285,6 +300,7 @@ Created by WB—Tech, http://wbtech.pro/
       pathGroup = this.maskSVG.g().attr({
         display: "none",
         fill: "transparent",
+        style: "-webkit-transition:100ms;transition:100ms;",
         cursor: "pointer"
       });
       $(documentSVG).find("path").each((function(_this) {

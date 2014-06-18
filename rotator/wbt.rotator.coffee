@@ -151,6 +151,39 @@ Created by WB—Tech, http://wbtech.pro/
           .parent().find(".wbt-input-select_options").css("background-color": @$el.css("background-color"), "box-shadow": "0 0 1px 1px #{@$el.css("background-color")}")
 
         @updateLocalization(true)
+
+    # Load Skin
+    if @cfg.skin
+      if @cfg.skin.background
+        @$el.css
+          "color": @cfg.skin.text
+          "background-color": @cfg.skin.background
+
+    cssText = "
+      .wbt-rotator {color:#{@cfg.skin.text} !important;background-color:#{@cfg.skin.background} !important;}
+      .wbt-rotator-titles_item:hover,
+      .wbt-rotator-titles_item__hover,
+      .wbt-rotator .wbt-input-select_item:hover {color:#{@cfg.skin.hover} !important;}
+      .wbt-rotator-titles_item__active,
+      .wbt-rotator-titles_item__active:hover,
+      .wbt-rotator-legend a,
+      .wbt-rotator .wbt-input-select__active .wbt-input-select_button,
+      .wbt-rotator .wbt-input-select_item__active,
+      .wbt-rotator .wbt-input-select_item__active:hover,
+      .wbt-rotator .wbt-input-select_selected:hover {color:#{@cfg.skin.active} !important;}
+      .wbt-rotator .wbt-input-select_selected,
+      .wbt-rotator .wbt-input-select_list {border:1px solid #{@cfg.skin.text};}
+      .wbt-rotator .wbt-input-select_selected:hover,
+      .wbt-rotator .wbt-input-select_list:hover,
+      .wbt-rotator .wbt-input-select__active .wbt-input-select_list {border:1px solid #{@cfg.skin.active};}
+      .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {border-color:#{@cfg.skin.active};}"
+
+    $style = $("<style></style>").prependTo(@$el)
+    if $style[0].styleSheet
+      $style[0].styleSheet.cssText = cssText
+    else
+      $style.html cssText
+
     return
 
   WBTRotator::defaults =
@@ -258,6 +291,7 @@ Created by WB—Tech, http://wbtech.pro/
     pathGroup = @maskSVG.g().attr
       display: "none"
       fill: "transparent"
+      style: "-webkit-transition:100ms;transition:100ms;"
       cursor: "pointer"
 
     $(documentSVG).find("path").each (index, el)=>
