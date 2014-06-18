@@ -654,11 +654,19 @@ Created by WB—Tech, http://wbtech.pro/
       left: "0"
       right: "0"
       top: "0"
+    $heading = $(".wbt-rotator-heading")
+    $headingTextActive = $(".wbt-rotator-heading_text")
+    $headingTextPrevious = $headingTextActive.clone().appendTo $heading
+    $headingTextPrevious.css
+      opacity: "0"
+      position: "absolute"
+      left: "0"
+      top: "0"
 
     # Change heading
     val = $.wbtRotator.l10n[@cfg.language].heading
     val = $.wbtRotator.l10n["EN"].heading if val is "{{EN}}"
-    @$legendHeading.children("span").text(val)
+    $headingTextActive.text(val)
 
     # Change titles
     for titleId, $el of @$legendTitles
@@ -666,7 +674,7 @@ Created by WB—Tech, http://wbtech.pro/
       val = $.wbtRotator.l10n["en"].masks[titleId].title if val is "{{EN}}"
       $el.children("span").eq(0).text(val)
 
-    # Change desctiptions
+    # Change descriptions
     for titleId, $el of @$legendDescriptions
       val = $.wbtRotator.l10n[@cfg.language].masks[titleId].description
       val = $.wbtRotator.l10n["EN"].masks[titleId].description if val is "{{EN}}"
@@ -683,6 +691,10 @@ Created by WB—Tech, http://wbtech.pro/
     $titlesItems.appendTo $titlesList
 
     # Animate sort change
+    $headingTextActive.css(opacity: 0).animate {opacity: "1"}, animationTime
+    $headingTextPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
+      $headingTextPrevious.remove()
+
     $titlesItems.css(opacity: 0).animate {opacity: "1"}, animationTime
     $titlesItemsPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
       $titlesItemsPrevious.remove()
@@ -691,9 +703,9 @@ Created by WB—Tech, http://wbtech.pro/
     $descriptionsPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
       $descriptionsPrevious.remove()
 
-  #    if $titlesItemsActive.index() isnt -1
+#    if $titlesItemsActive.index() isnt -1
 #    $titlesItemsPrevious
-    console.log $titlesItemsActive.index()
+#    console.log $titlesItemsActive.index()
 #    else
 #      a=a
 

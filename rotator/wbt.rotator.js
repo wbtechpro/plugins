@@ -719,7 +719,7 @@ Created by WB—Tech, http://wbtech.pro/
       return this.updateLocalization();
     };
     WBTRotator.prototype.updateLocalization = function(isFirstTime) {
-      var $descriptionsActive, $descriptionsList, $descriptionsPrevious, $el, $titlesItems, $titlesItemsActive, $titlesItemsPrevious, $titlesList, animationTime, titleId, val, _ref, _ref1;
+      var $descriptionsActive, $descriptionsList, $descriptionsPrevious, $el, $heading, $headingTextActive, $headingTextPrevious, $titlesItems, $titlesItemsActive, $titlesItemsPrevious, $titlesList, animationTime, titleId, val, _ref, _ref1;
       animationTime = isFirstTime ? 0 : 500;
       $titlesList = $(".wbt-rotator-titles_list");
       $titlesItems = $(".wbt-rotator-titles_item");
@@ -744,11 +744,20 @@ Created by WB—Tech, http://wbtech.pro/
         right: "0",
         top: "0"
       });
+      $heading = $(".wbt-rotator-heading");
+      $headingTextActive = $(".wbt-rotator-heading_text");
+      $headingTextPrevious = $headingTextActive.clone().appendTo($heading);
+      $headingTextPrevious.css({
+        opacity: "0",
+        position: "absolute",
+        left: "0",
+        top: "0"
+      });
       val = $.wbtRotator.l10n[this.cfg.language].heading;
       if (val === "{{EN}}") {
         val = $.wbtRotator.l10n["EN"].heading;
       }
-      this.$legendHeading.children("span").text(val);
+      $headingTextActive.text(val);
       _ref = this.$legendTitles;
       for (titleId in _ref) {
         $el = _ref[titleId];
@@ -777,6 +786,18 @@ Created by WB—Tech, http://wbtech.pro/
         return 0;
       });
       $titlesItems.appendTo($titlesList);
+      $headingTextActive.css({
+        opacity: 0
+      }).animate({
+        opacity: "1"
+      }, animationTime);
+      $headingTextPrevious.css({
+        opacity: 1
+      }).animate({
+        opacity: "0"
+      }, animationTime, function() {
+        return $headingTextPrevious.remove();
+      });
       $titlesItems.css({
         opacity: 0
       }).animate({
@@ -794,14 +815,13 @@ Created by WB—Tech, http://wbtech.pro/
       }).animate({
         opacity: "1"
       }, animationTime);
-      $descriptionsPrevious.css({
+      return $descriptionsPrevious.css({
         opacity: 1
       }).animate({
         opacity: "0"
       }, animationTime, function() {
         return $descriptionsPrevious.remove();
       });
-      return console.log($titlesItemsActive.index());
     };
     $.wbtError = function(error) {
       if (window.console && window.console.error) {
