@@ -4,7 +4,7 @@
     EN: {
       heading: "Bones",
       masks: {
-        nasalconchae: {
+        conchae: {
           title: "Inferior nasal conchae",
           description: "A pair of spongy bones located in the nasal cavity and connected with the upper jaw. Mucosal surface and the shape of these bones allows effective humidification and purification of the air going through the nasal cavity."
         },
@@ -16,7 +16,7 @@
           title: "Frontal bone",
           description: "Unpaired bone of the front of the cerebral cranium. Divided into large vertical portion called squama frontalis, orbital and nasal portions. Frontal bone articulates with sphenoid, ethmoid, parietal, nasal, maxillary, lacrimal and zygomatic bones."
         },
-        lacrimal: {
+        lacrimalis: {
           title: "Lacrimal bones",
           description: "Paired bones, located in the anterior inner walls of eye orbits, bordering the frontal process of the maxilla. Apart from the upper jaw lacrimal bones also articulate with the frontal and ethmoid bones, as well as the inferior nasal conchae."
         },
@@ -65,7 +65,7 @@
     RU: {
       heading: "Кости",
       masks: {
-        nasalconchae: {
+        conchae: {
           title: "Нижние носовые раковины",
           description: "Парные губчатые кости, расположенные в полости носа и граничащие с верхней челюстью. Слизистая оболочка на поверхности этих костей обеспечивает увлажнение и очищение воздуха, проходящего через носовую полость, а форма носовых раковин делает этот процессс эффективнее."
         },
@@ -77,7 +77,7 @@
           title: "Лобная кость",
           description: "Непарная кость передней части церебрального отдела черепа. Разделяется на лобную чешую, глазничные и носовую части. Соединяется с клиновидной, решётчатой, теменными, носовыми, верхнечелюстными, слёзными и скуловыми костями."
         },
-        lacrimal: {
+        lacrimalis: {
           title: "Слезные кости",
           description: "Парные кости, расположенные в переднем отделе внутренних стенок глазниц, граничащие с лобным отростком верхней челюсти. Помимо верхней челюсти, соединяется с лобной и решетчатой костьми, а также с нижней носовой раковиной."
         },
@@ -126,7 +126,7 @@
     LA: {
       heading: "{{EN}}",
       masks: {
-        nasalconchae: {
+        conchae: {
           title: "Conchae nasalis inferior",
           description: "{{EN}}"
         },
@@ -138,7 +138,7 @@
           title: "Os frontalis",
           description: "{{EN}}"
         },
-        lacrimal: {
+        lacrimalis: {
           title: "Os lacrimalis",
           description: "{{EN}}"
         },
@@ -187,7 +187,7 @@
     CN: {
       heading: "{{EN}}",
       masks: {
-        nasalconchae: {
+        conchae: {
           title: "鼻下鼻甲",
           description: "{{EN}}"
         },
@@ -199,7 +199,7 @@
           title: "额骨",
           description: "{{EN}}"
         },
-        lacrimal: {
+        lacrimalis: {
           title: "泪骨",
           description: "{{EN}}"
         },
@@ -248,7 +248,7 @@
     DE: {
       heading: "{{EN}}",
       masks: {
-        nasalconchae: {
+        conchae: {
           title: "Untere Nasenmuschel",
           description: "{{EN}}"
         },
@@ -260,7 +260,7 @@
           title: "Stirnbein",
           description: "{{EN}}"
         },
-        lacrimal: {
+        lacrimalis: {
           title: "Tränen Knochen",
           description: "{{EN}}"
         },
@@ -309,7 +309,7 @@
     ES: {
       heading: "{{EN}}",
       masks: {
-        nasalconchae: {
+        conchae: {
           title: "Concha nasal inferior",
           description: "{{EN}}"
         },
@@ -321,7 +321,7 @@
           title: "Hueso frontal",
           description: "{{EN}}"
         },
-        lacrimal: {
+        lacrimalis: {
           title: "Huesos lacrimales",
           description: "{{EN}}"
         },
@@ -370,7 +370,7 @@
     FR: {
       heading: "{{EN}}",
       masks: {
-        nasalconchae: {
+        conchae: {
           title: "Inférieur cornets nasaux",
           description: "{{EN}}"
         },
@@ -382,7 +382,7 @@
           title: "Os frontal",
           description: "{{EN}}"
         },
-        lacrimal: {
+        lacrimalis: {
           title: "Os lacrymaux",
           description: "{{EN}}"
         },

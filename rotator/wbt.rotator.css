@@ -31,7 +31,7 @@
 @media only screen and (max-width: 1276px) {
     .wbt-rotator-heading {float:none;width:auto;max-width:none;margin-right:0;}
     .wbt-rotator-titles_list {float:none;width:auto;max-width:none;margin:0;}
-    .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;}
+    .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;margin:20px 0 0;}
 }
 
 /* Cursors*/

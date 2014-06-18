@@ -152,31 +152,31 @@ Created by WB—Tech, http://wbtech.pro/
 
         @updateLocalization(true)
 
-    # Load Skin
-    if @cfg.skin
-      if @cfg.skin.background
+    # Load Theme
+    if @cfg.theme
+      if @cfg.theme.background
         @$el.css
-          "color": @cfg.skin.text
-          "background-color": @cfg.skin.background
+          "color": @cfg.theme.text
+          "background-color": @cfg.theme.background
 
     cssText = "
-      .wbt-rotator {color:#{@cfg.skin.text} !important;background-color:#{@cfg.skin.background} !important;}
+      .wbt-rotator {color:#{@cfg.theme.text} !important;background-color:#{@cfg.theme.background} !important;}
       .wbt-rotator-titles_item:hover,
       .wbt-rotator-titles_item__hover,
-      .wbt-rotator .wbt-input-select_item:hover {color:#{@cfg.skin.hover} !important;}
+      .wbt-rotator .wbt-input-select_item:hover {color:#{@cfg.theme.hover} !important;}
       .wbt-rotator-titles_item__active,
       .wbt-rotator-titles_item__active:hover,
       .wbt-rotator-legend a,
       .wbt-rotator .wbt-input-select__active .wbt-input-select_button,
       .wbt-rotator .wbt-input-select_item__active,
       .wbt-rotator .wbt-input-select_item__active:hover,
-      .wbt-rotator .wbt-input-select_selected:hover {color:#{@cfg.skin.active} !important;}
+      .wbt-rotator .wbt-input-select_selected:hover {color:#{@cfg.theme.active} !important;}
       .wbt-rotator .wbt-input-select_selected,
-      .wbt-rotator .wbt-input-select_list {border:1px solid #{@cfg.skin.text};}
+      .wbt-rotator .wbt-input-select_list {border:1px solid #{@cfg.theme.text};}
       .wbt-rotator .wbt-input-select_selected:hover,
       .wbt-rotator .wbt-input-select_list:hover,
-      .wbt-rotator .wbt-input-select__active .wbt-input-select_list {border:1px solid #{@cfg.skin.active};}
-      .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {border-color:#{@cfg.skin.active};}"
+      .wbt-rotator .wbt-input-select__active .wbt-input-select_list {border:1px solid #{@cfg.theme.active};}
+      .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {border-color:#{@cfg.theme.active};}"
 
     $style = $("<style></style>").prependTo(@$el)
     if $style[0].styleSheet
@@ -296,7 +296,7 @@ Created by WB—Tech, http://wbtech.pro/
 
     $(documentSVG).find("path").each (index, el)=>
       pathNew = @maskSVG.path $(el).attr("d")
-      pathNew.transform("s.25,.25,0,0")
+#      pathNew.transform("s.25,.25,0,0") #TODO automatically get proper sizes
       if $.wbtIsTouch()
         pathNew.touchstart =>
           @pointerMoved = false

@@ -157,15 +157,15 @@ Created by WB—Tech, http://wbtech.pro/
           this.updateLocalization(true);
         }
       }
-      if (this.cfg.skin) {
-        if (this.cfg.skin.background) {
+      if (this.cfg.theme) {
+        if (this.cfg.theme.background) {
           this.$el.css({
-            "color": this.cfg.skin.text,
-            "background-color": this.cfg.skin.background
+            "color": this.cfg.theme.text,
+            "background-color": this.cfg.theme.background
           });
         }
       }
-      cssText = ".wbt-rotator {color:" + this.cfg.skin.text + " !important;background-color:" + this.cfg.skin.background + " !important;} .wbt-rotator-titles_item:hover, .wbt-rotator-titles_item__hover, .wbt-rotator .wbt-input-select_item:hover {color:" + this.cfg.skin.hover + " !important;} .wbt-rotator-titles_item__active, .wbt-rotator-titles_item__active:hover, .wbt-rotator-legend a, .wbt-rotator .wbt-input-select__active .wbt-input-select_button, .wbt-rotator .wbt-input-select_item__active, .wbt-rotator .wbt-input-select_item__active:hover, .wbt-rotator .wbt-input-select_selected:hover {color:" + this.cfg.skin.active + " !important;} .wbt-rotator .wbt-input-select_selected, .wbt-rotator .wbt-input-select_list {border:1px solid " + this.cfg.skin.text + ";} .wbt-rotator .wbt-input-select_selected:hover, .wbt-rotator .wbt-input-select_list:hover, .wbt-rotator .wbt-input-select__active .wbt-input-select_list {border:1px solid " + this.cfg.skin.active + ";} .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {border-color:" + this.cfg.skin.active + ";}";
+      cssText = ".wbt-rotator {color:" + this.cfg.theme.text + " !important;background-color:" + this.cfg.theme.background + " !important;} .wbt-rotator-titles_item:hover, .wbt-rotator-titles_item__hover, .wbt-rotator .wbt-input-select_item:hover {color:" + this.cfg.theme.hover + " !important;} .wbt-rotator-titles_item__active, .wbt-rotator-titles_item__active:hover, .wbt-rotator-legend a, .wbt-rotator .wbt-input-select__active .wbt-input-select_button, .wbt-rotator .wbt-input-select_item__active, .wbt-rotator .wbt-input-select_item__active:hover, .wbt-rotator .wbt-input-select_selected:hover {color:" + this.cfg.theme.active + " !important;} .wbt-rotator .wbt-input-select_selected, .wbt-rotator .wbt-input-select_list {border:1px solid " + this.cfg.theme.text + ";} .wbt-rotator .wbt-input-select_selected:hover, .wbt-rotator .wbt-input-select_list:hover, .wbt-rotator .wbt-input-select__active .wbt-input-select_list {border:1px solid " + this.cfg.theme.active + ";} .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {border-color:" + this.cfg.theme.active + ";}";
       $style = $("<style></style>").prependTo(this.$el);
       if ($style[0].styleSheet) {
         $style[0].styleSheet.cssText = cssText;
@@ -307,7 +307,6 @@ Created by WB—Tech, http://wbtech.pro/
         return function(index, el) {
           var pathNew;
           pathNew = _this.maskSVG.path($(el).attr("d"));
-          pathNew.transform("s.25,.25,0,0");
           if ($.wbtIsTouch()) {
             pathNew.touchstart(function() {
               return _this.pointerMoved = false;
