@@ -329,7 +329,7 @@ Created by WB—Tech, http://wbtech.pro/
           return pathGroup.add(pathNew);
         };
       })(this));
-      this.$masks[title].paths[index] = pathGroup;
+      this.$masks[title].paths[index] = pathGroup.attr("display", "none");
       this.$masks[title].paths[index].data("id", index);
       imageNew.attr("mask", pathGroup.clone().attr({
         fill: "#fff",

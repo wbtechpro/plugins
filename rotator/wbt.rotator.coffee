@@ -312,7 +312,7 @@ Created by WB—Tech, http://wbtech.pro/
       pathNew.data("title", title)
       pathGroup.add pathNew
 
-    @$masks[title].paths[index] = pathGroup
+    @$masks[title].paths[index] = pathGroup.attr("display", "none")
     @$masks[title].paths[index].data("id", index)
 
     imageNew.attr("mask", pathGroup.clone().attr(fill: "#fff", display: ""))
