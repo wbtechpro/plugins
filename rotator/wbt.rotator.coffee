@@ -560,23 +560,6 @@ Created by WB—Tech, http://wbtech.pro/
     @$frameCurrent = @$frames.eq(frameCurrent)
     @$frameCurrent.addClass "wbt-rotator-image__active"
 
-    ###
-    for mask in @cfg.maskSrc
-      # Deselect and hide everything on previous frame
-      @$masks[mask.titleId].paths[@frames.previous].attr display: "none", "stroke-width": 0, fill: "rgba(255,255,255,0)"
-      @$masks[mask.titleId].images[@frames.previous].attr display: "none"
-
-      # Show current frame
-      @$masks[mask.titleId].paths[frameCurrent].attr display: ""
-      if @masks.current and @masks.current is mask.titleId
-        @$masks[mask.titleId].paths[frameCurrent].attr "stroke-width": 1
-        if @cfg.fogging
-          @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
-        else
-          @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
-        @$masks[mask.titleId].images[frameCurrent].attr display: ""
-    ###
-
     for mask in @cfg.maskSrc
       # Deselect and hide everything on previous frame
       @$masks[mask.titleId].paths[@frames.previous].attr display: "none", "stroke-width": 0, fill: "rgba(255,255,255,0)"
