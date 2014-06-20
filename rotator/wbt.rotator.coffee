@@ -18,6 +18,7 @@ $(".any-selector").wbtRotator({
 Copyright 2014, Visual Science, http://visualscience.ru/
 Created by WB—Tech, http://wbtech.pro/
 ###
+# TODO when fogging false selected path is blinking
 (($) ->
   WBTRotator = ($el, params) ->
     @cfg = $.extend({}, WBTRotator::defaults, params)
@@ -62,30 +63,6 @@ Created by WB—Tech, http://wbtech.pro/
 
     return $.wbtError("Specify non empty rotator placeholder.") unless @$el.length
     return $.wbtError("Specify 'src' in $().wbtRotator() call.") if not @cfg.frameSrc
-
-    # Get localized titles
-#    if $.wbtRotator.l10n?
-#
-      # Prepare arrays of sorted localized titles
-#      for lang, langcontent of $.wbtRotator.l10n
-#        langcontent.sortedItems = []
-#
-#        for mask, maskcontent of langcontent.masks
-#          langcontent.sortedItems.push
-#            titleId: mask,
-#            title: maskcontent.title,
-#            description: maskcontent.description
-#
-#        langcontent.sortedItems.sort (a, b)->
-#          return 1 if a.title > b.title
-#          return -1 if a.title < b.title
-#          return 0
-
-#      for mask in @cfg.maskSrc
-#        console.log mask
-#        if not mask.title? and mask.titleId
-#          mask.title = $.wbtRotator.l10n[@cfg.language].masks[mask.titleId].title
-#          mask.description = $.wbtRotator.l10n[@cfg.language].masks[mask.titleId].description
 
     # Create loading spinner
     @$loader = $("<span></span>").attr(class: "wbt-rotator-loader").prependTo(@$elContent)
@@ -243,7 +220,8 @@ Created by WB—Tech, http://wbtech.pro/
         @frames.size =
           width: @$cover.width()
           height: @$cover.height()
-        @$elContent.width(@frames.size.width).height @frames.size.height
+        @$elContent.width @frames.size.width
+        @$el.height @frames.size.height
         return
       )
     .on("error", =>
@@ -323,6 +301,10 @@ Created by WB—Tech, http://wbtech.pro/
       # Move all paths infront of images to make them clickable
       for mask in @cfg.maskSrc
         for path in @$masks[mask.titleId].paths
+          colorRGB = Snap.getRGB mask.color
+          mask.colorRGB = colorRGB
+          path.attr stroke: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
+          path.attr "stroke-width": 0
           path.appendTo @maskSVG
       if @frames.loaded is @frames.total
         @loadComplete()
@@ -353,7 +335,7 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::loadComplete = ->
-    @$elContent.on "#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator", "image", $.proxy(@onPathDeselect, @, null)
+    @$elContent.on "#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator", "image", $.proxy(@pathDeselect, @, null)
     @$frames = @$elContent.children(".wbt-rotator-image")
     @changeFrame @frames.current
     @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
@@ -409,14 +391,24 @@ Created by WB—Tech, http://wbtech.pro/
       @changeFrame delta
     return
 
-  WBTRotator::onPathDeselect = (el, e)->
-    if @masks.current
-      if not @cfg.fogging
-        @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
-      if @cfg.legend
-        @$legendTitles[@masks.current].removeClass("wbt-rotator-titles_item__active")
-        @$legendDescriptions[@masks.current].removeClass("wbt-rotator-descriptions_item__active")
-      @masks.current = ""
+  WBTRotator::pathSelect = (title, frame = @frames.current)->
+    for mask in @cfg.maskSrc
+      if mask.titleId is title
+        @$masks[mask.titleId].paths[frame].attr "stroke-width": 1
+        if @cfg.fogging
+          @$masks[mask.titleId].paths[frame].attr fill: "rgba(255,255,255,0)"
+        else
+          @$masks[mask.titleId].paths[frame].attr fill: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
+        @$masks[mask.titleId].images[frame].attr display: ""
+    if @cfg.fogging
+      @$el.addClass("wbt-rotator-mask__active")
+
+  WBTRotator::pathDeselect = (title, frame = @frames.current)->
+    for mask in @cfg.maskSrc
+      if mask.titleId is title
+        @$masks[mask.titleId].paths[frame].attr "stroke-width": 0, fill: "rgba(255,255,255,0)"
+        @$masks[mask.titleId].images[frame].attr display: "none"
+    if @cfg.fogging
       @$el.removeClass("wbt-rotator-mask__active")
 
   WBTRotator::onPathClick = (el, e)->
@@ -424,66 +416,34 @@ Created by WB—Tech, http://wbtech.pro/
     # This is to have single handler for legend and path clicks
     title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest("li").data("title")
 
-    # If nothing is yet selected
-    if not @masks.current
+    # When this path was clicked again
+    if @masks.current and @masks.current is title
+      @pathDeselect(@masks.current)
+      @masks.current = ""
+
+    # When other path was clicked or nothing was selected
+    else
+      if @masks.current and @masks.current isnt title
+        @pathDeselect(@masks.current)
+      @pathSelect(title)
       @masks.current = title
 
       # Search for closest frame with existing path if current has none
-#      if not @$masks[@masks.current].paths[@frames.current].node.children.length
+      # if not @$masks[@masks.current].paths[@frames.current].node.children.length
       @findFrame()
 
-      for mask in @cfg.maskSrc
-        if mask.titleId is title
-          colorRGB = Snap.getRGB mask.color
-          @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
-      if @cfg.fogging
-        @$el.addClass("wbt-rotator-mask__active")
-
-    # If something is selected
-    else
-      # Other mask
-      if @masks.current isnt title
-        if not @cfg.fogging
-          @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
-        @masks.current = title
-
-        # Search for closest frame with existing path if current has none
-        # if not @$masks[@masks.current].paths[@frames.current].node.children.length
-        @findFrame()
-
-        for mask in @cfg.maskSrc
-          if mask.titleId is title
-            colorRGB = Snap.getRGB mask.color
-            @$masks[@masks.current].paths[@frames.current].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
-      else
-        @masks.current = ""
-        @$el.removeClass("wbt-rotator-mask__active")
-
-    # Select legend item
+    # Update legend items visibility
     if @cfg.legend
       for mask in @cfg.maskSrc
         @$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__active", mask.titleId is @masks.current)
         @$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId is @masks.current)
-
-    # Remove hover
-    if not @cfg.fogging and not @masks.current or @cfg.fogging
-      @$masks[title].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
-
-    # Hide other masks, but show clicked
-    for mask in @cfg.maskSrc
-      if @masks.current and mask.titleId isnt @masks.current
-        @$masks[mask.titleId].images[@frames.current].attr display: "none"
-      else
-        @$masks[mask.titleId].paths[@frames.current].attr display: ""
-        @$masks[mask.titleId].images[@frames.current].attr display: ""
 
   WBTRotator::onPathOver = (el, e)->
     title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest("li").data("title")
     # Hover mask it is the one that was hovered
     for mask in @cfg.maskSrc
       if mask.titleId is title and mask.titleId isnt @masks.current
-        colorRGB = Snap.getRGB mask.color
-        @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
+        @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
 
     # Hover legend item
     if @cfg.legend
@@ -562,7 +522,6 @@ Created by WB—Tech, http://wbtech.pro/
     animateStep = (stepsRemaining, direction)=>
       @frames.current += direction
       @frames.current %= @frames.total
-#      console.log @frames.current
 
       @changeFrame @frames.current
       if stepsRemaining > 1
@@ -582,38 +541,53 @@ Created by WB—Tech, http://wbtech.pro/
 
     return true
 
-  WBTRotator::changeFrame = (newIndex) ->
+  WBTRotator::changeFrame = (frameCurrent) ->
     # Rotate avoiding negative values or restrict by min/max
     if @cfg.circular
-#      newIndex %= @frames.total
-      newIndex += @frames.total
-      newIndex %= @frames.total
+#      frameCurrent %= @frames.total
+      frameCurrent += @frames.total
+      frameCurrent %= @frames.total
     else
-      if newIndex > @frames.total - 1
-        newIndex = @frames.total - 1
-      if newIndex < 0
-        newIndex = 0
+      if frameCurrent > @frames.total - 1
+        frameCurrent = @frames.total - 1
+      if frameCurrent < 0
+        frameCurrent = 0
 
-    return if newIndex is @framePrevious
+    return if frameCurrent is @framePrevious
 
     # TODO: allow non-circular rotation, arc rotation
     @$frameCurrent.removeClass "wbt-rotator-image__active"
-    @$frameCurrent = @$frames.eq(newIndex)
+    @$frameCurrent = @$frames.eq(frameCurrent)
     @$frameCurrent.addClass "wbt-rotator-image__active"
 
+    ###
     for mask in @cfg.maskSrc
-      @$masks[mask.titleId].paths[@frames.previous].attr display: "none", fill: "rgba(255,255,255,0)"
+      # Deselect and hide everything on previous frame
+      @$masks[mask.titleId].paths[@frames.previous].attr display: "none", "stroke-width": 0, fill: "rgba(255,255,255,0)"
       @$masks[mask.titleId].images[@frames.previous].attr display: "none"
 
-      @$masks[mask.titleId].paths[newIndex].attr display: ""
-      if not @cfg.fogging and @masks.current is mask.titleId
-        colorRGB = Snap.getRGB mask.color
-        @$masks[mask.titleId].paths[newIndex].attr fill: "rgba(#{colorRGB.r},#{colorRGB.g},#{colorRGB.b},.4)"
-      # Show image if it something is selected and it is this mask
+      # Show current frame
+      @$masks[mask.titleId].paths[frameCurrent].attr display: ""
       if @masks.current and @masks.current is mask.titleId
-        @$masks[mask.titleId].images[newIndex].attr display: ""
+        @$masks[mask.titleId].paths[frameCurrent].attr "stroke-width": 1
+        if @cfg.fogging
+          @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+        else
+          @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
+        @$masks[mask.titleId].images[frameCurrent].attr display: ""
+    ###
 
-    @frames.previous = newIndex
+    for mask in @cfg.maskSrc
+      # Deselect and hide everything on previous frame
+      @$masks[mask.titleId].paths[@frames.previous].attr display: "none", "stroke-width": 0, fill: "rgba(255,255,255,0)"
+      @$masks[mask.titleId].images[@frames.previous].attr display: "none"
+      @$masks[mask.titleId].paths[frameCurrent].attr display: ""
+
+    # Show selected path
+    if @masks.current
+      @pathSelect(@masks.current, frameCurrent)
+
+    @frames.previous = frameCurrent
     return
 
   WBTRotator::startAutoRotate = ->
@@ -629,10 +603,11 @@ Created by WB—Tech, http://wbtech.pro/
     # TODO: Stop on mouse hover
 
   WBTRotator::changeLocale = (e)->
-    @cfg.language = $(e.target).val()
+    @cfg.language = $(e.target).val().toUpperCase()
     @updateLocalization()
 
   WBTRotator::updateLocalization = (isFirstTime)->
+    @$el.attr "lang", @cfg.language
     animationTime = if isFirstTime then 0 else 500
     $titlesList = $(".wbt-rotator-titles_list")
     $titlesItems = $(".wbt-rotator-titles_item")
@@ -672,7 +647,7 @@ Created by WB—Tech, http://wbtech.pro/
     for titleId, $el of @$legendTitles
       val = $.wbtRotator.l10n[@cfg.language].masks[titleId].title
       val = $.wbtRotator.l10n["en"].masks[titleId].title if val is "{{EN}}"
-      $el.children("span").eq(0).text(val)
+      $el.attr("title", val).children("span").eq(0).text(val)
 
     # Change descriptions
     for titleId, $el of @$legendDescriptions
@@ -702,12 +677,6 @@ Created by WB—Tech, http://wbtech.pro/
     $descriptionsActive.css(opacity: 0).animate {opacity: "1"}, animationTime
     $descriptionsPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
       $descriptionsPrevious.remove()
-
-#    if $titlesItemsActive.index() isnt -1
-#    $titlesItemsPrevious
-#    console.log $titlesItemsActive.index()
-#    else
-#      a=a
 
   $.wbtError = (error) ->
     console.error error  if window.console and window.console.error

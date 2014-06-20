@@ -239,7 +239,8 @@ Created by WB—Tech, http://wbtech.pro/
             width: _this.$cover.width(),
             height: _this.$cover.height()
           };
-          _this.$elContent.width(_this.frames.size.width).height(_this.frames.size.height);
+          _this.$elContent.width(_this.frames.size.width);
+          _this.$el.height(_this.frames.size.height);
         };
       })(this)).on("error", (function(_this) {
         return function() {
@@ -282,7 +283,7 @@ Created by WB—Tech, http://wbtech.pro/
       return _results;
     };
     WBTRotator.prototype.loadedSVG = function(documentSVG, title, index) {
-      var imageGroup, imageNew, mask, path, pathGroup, _i, _j, _len, _len1, _ref, _ref1;
+      var colorRGB, imageGroup, imageNew, mask, path, pathGroup, _i, _j, _len, _len1, _ref, _ref1;
       this.masks.loaded++;
       this.updateLoader();
       if (this.$masks[title] == null) {
@@ -343,6 +344,14 @@ Created by WB—Tech, http://wbtech.pro/
           _ref1 = this.$masks[mask.titleId].paths;
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             path = _ref1[_j];
+            colorRGB = Snap.getRGB(mask.color);
+            mask.colorRGB = colorRGB;
+            path.attr({
+              stroke: "rgba(" + mask.colorRGB.r + "," + mask.colorRGB.g + "," + mask.colorRGB.b + ",.4)"
+            });
+            path.attr({
+              "stroke-width": 0
+            });
             path.appendTo(this.maskSVG);
           }
         }
@@ -382,7 +391,7 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.loadComplete = function() {
-      this.$elContent.on("" + ($.wbtIsTouch() ? "singleTap" : "click") + ".wbt-rotator", "image", $.proxy(this.onPathDeselect, this, null));
+      this.$elContent.on("" + ($.wbtIsTouch() ? "singleTap" : "click") + ".wbt-rotator", "image", $.proxy(this.pathDeselect, this, null));
       this.$frames = this.$elContent.children(".wbt-rotator-image");
       this.changeFrame(this.frames.current);
       this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
@@ -439,106 +448,92 @@ Created by WB—Tech, http://wbtech.pro/
         this.changeFrame(delta);
       }
     };
-    WBTRotator.prototype.onPathDeselect = function(el, e) {
-      if (this.masks.current) {
-        if (!this.cfg.fogging) {
-          this.$masks[this.masks.current].paths[this.frames.current].attr({
-            fill: "rgba(255,255,255,0)"
+    WBTRotator.prototype.pathSelect = function(title, frame) {
+      var mask, _i, _len, _ref;
+      if (frame == null) {
+        frame = this.frames.current;
+      }
+      _ref = this.cfg.maskSrc;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        mask = _ref[_i];
+        if (mask.titleId === title) {
+          this.$masks[mask.titleId].paths[frame].attr({
+            "stroke-width": 1
+          });
+          if (this.cfg.fogging) {
+            this.$masks[mask.titleId].paths[frame].attr({
+              fill: "rgba(255,255,255,0)"
+            });
+          } else {
+            this.$masks[mask.titleId].paths[frame].attr({
+              fill: "rgba(" + mask.colorRGB.r + "," + mask.colorRGB.g + "," + mask.colorRGB.b + ",.4)"
+            });
+          }
+          this.$masks[mask.titleId].images[frame].attr({
+            display: ""
           });
         }
-        if (this.cfg.legend) {
-          this.$legendTitles[this.masks.current].removeClass("wbt-rotator-titles_item__active");
-          this.$legendDescriptions[this.masks.current].removeClass("wbt-rotator-descriptions_item__active");
+      }
+      if (this.cfg.fogging) {
+        return this.$el.addClass("wbt-rotator-mask__active");
+      }
+    };
+    WBTRotator.prototype.pathDeselect = function(title, frame) {
+      var mask, _i, _len, _ref;
+      if (frame == null) {
+        frame = this.frames.current;
+      }
+      _ref = this.cfg.maskSrc;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        mask = _ref[_i];
+        if (mask.titleId === title) {
+          this.$masks[mask.titleId].paths[frame].attr({
+            "stroke-width": 0,
+            fill: "rgba(255,255,255,0)"
+          });
+          this.$masks[mask.titleId].images[frame].attr({
+            display: "none"
+          });
         }
-        this.masks.current = "";
+      }
+      if (this.cfg.fogging) {
         return this.$el.removeClass("wbt-rotator-mask__active");
       }
     };
     WBTRotator.prototype.onPathClick = function(el, e) {
-      var colorRGB, mask, title, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _results;
+      var mask, title, _i, _len, _ref, _results;
       title = el ? el.data("title") : $(e.target).data("title") || $(e.target).closest("li").data("title");
-      if (!this.masks.current) {
+      if (this.masks.current && this.masks.current === title) {
+        this.pathDeselect(this.masks.current);
+        this.masks.current = "";
+      } else {
+        if (this.masks.current && this.masks.current !== title) {
+          this.pathDeselect(this.masks.current);
+        }
+        this.pathSelect(title);
         this.masks.current = title;
         this.findFrame();
-        _ref = this.cfg.maskSrc;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          mask = _ref[_i];
-          if (mask.titleId === title) {
-            colorRGB = Snap.getRGB(mask.color);
-            this.$masks[this.masks.current].paths[this.frames.current].attr({
-              fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
-            });
-          }
-        }
-        if (this.cfg.fogging) {
-          this.$el.addClass("wbt-rotator-mask__active");
-        }
-      } else {
-        if (this.masks.current !== title) {
-          if (!this.cfg.fogging) {
-            this.$masks[this.masks.current].paths[this.frames.current].attr({
-              fill: "rgba(255,255,255,0)"
-            });
-          }
-          this.masks.current = title;
-          this.findFrame();
-          _ref1 = this.cfg.maskSrc;
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            mask = _ref1[_j];
-            if (mask.titleId === title) {
-              colorRGB = Snap.getRGB(mask.color);
-              this.$masks[this.masks.current].paths[this.frames.current].attr({
-                fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
-              });
-            }
-          }
-        } else {
-          this.masks.current = "";
-          this.$el.removeClass("wbt-rotator-mask__active");
-        }
       }
       if (this.cfg.legend) {
-        _ref2 = this.cfg.maskSrc;
-        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-          mask = _ref2[_k];
+        _ref = this.cfg.maskSrc;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          mask = _ref[_i];
           this.$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__active", mask.titleId === this.masks.current);
-          this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId === this.masks.current);
+          _results.push(this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId === this.masks.current));
         }
+        return _results;
       }
-      if (!this.cfg.fogging && !this.masks.current || this.cfg.fogging) {
-        this.$masks[title].paths[this.frames.current].attr({
-          fill: "rgba(255,255,255,0)"
-        });
-      }
-      _ref3 = this.cfg.maskSrc;
-      _results = [];
-      for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
-        mask = _ref3[_l];
-        if (this.masks.current && mask.titleId !== this.masks.current) {
-          _results.push(this.$masks[mask.titleId].images[this.frames.current].attr({
-            display: "none"
-          }));
-        } else {
-          this.$masks[mask.titleId].paths[this.frames.current].attr({
-            display: ""
-          });
-          _results.push(this.$masks[mask.titleId].images[this.frames.current].attr({
-            display: ""
-          }));
-        }
-      }
-      return _results;
     };
     WBTRotator.prototype.onPathOver = function(el, e) {
-      var colorRGB, mask, title, _i, _j, _len, _len1, _ref, _ref1, _results;
+      var mask, title, _i, _j, _len, _len1, _ref, _ref1, _results;
       title = el ? el.data("title") : $(e.target).data("title") || $(e.target).closest("li").data("title");
       _ref = this.cfg.maskSrc;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         mask = _ref[_i];
         if (mask.titleId === title && mask.titleId !== this.masks.current) {
-          colorRGB = Snap.getRGB(mask.color);
           this.$masks[mask.titleId].paths[this.frames.current].attr({
-            fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
+            fill: "rgba(" + mask.colorRGB.r + "," + mask.colorRGB.g + "," + mask.colorRGB.b + ",.4)"
           });
         }
       }
@@ -652,51 +647,61 @@ Created by WB—Tech, http://wbtech.pro/
       }
       return true;
     };
-    WBTRotator.prototype.changeFrame = function(newIndex) {
-      var colorRGB, mask, _i, _len, _ref;
+    WBTRotator.prototype.changeFrame = function(frameCurrent) {
+      var mask, _i, _len, _ref;
       if (this.cfg.circular) {
-        newIndex += this.frames.total;
-        newIndex %= this.frames.total;
+        frameCurrent += this.frames.total;
+        frameCurrent %= this.frames.total;
       } else {
-        if (newIndex > this.frames.total - 1) {
-          newIndex = this.frames.total - 1;
+        if (frameCurrent > this.frames.total - 1) {
+          frameCurrent = this.frames.total - 1;
         }
-        if (newIndex < 0) {
-          newIndex = 0;
+        if (frameCurrent < 0) {
+          frameCurrent = 0;
         }
       }
-      if (newIndex === this.framePrevious) {
+      if (frameCurrent === this.framePrevious) {
         return;
       }
       this.$frameCurrent.removeClass("wbt-rotator-image__active");
-      this.$frameCurrent = this.$frames.eq(newIndex);
+      this.$frameCurrent = this.$frames.eq(frameCurrent);
       this.$frameCurrent.addClass("wbt-rotator-image__active");
+
+      /*
+      for mask in @cfg.maskSrc
+         * Deselect and hide everything on previous frame
+        @$masks[mask.titleId].paths[@frames.previous].attr display: "none", "stroke-width": 0, fill: "rgba(255,255,255,0)"
+        @$masks[mask.titleId].images[@frames.previous].attr display: "none"
+      
+         * Show current frame
+        @$masks[mask.titleId].paths[frameCurrent].attr display: ""
+        if @masks.current and @masks.current is mask.titleId
+          @$masks[mask.titleId].paths[frameCurrent].attr "stroke-width": 1
+          if @cfg.fogging
+            @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+          else
+            @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
+          @$masks[mask.titleId].images[frameCurrent].attr display: ""
+       */
       _ref = this.cfg.maskSrc;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         mask = _ref[_i];
         this.$masks[mask.titleId].paths[this.frames.previous].attr({
           display: "none",
+          "stroke-width": 0,
           fill: "rgba(255,255,255,0)"
         });
         this.$masks[mask.titleId].images[this.frames.previous].attr({
           display: "none"
         });
-        this.$masks[mask.titleId].paths[newIndex].attr({
+        this.$masks[mask.titleId].paths[frameCurrent].attr({
           display: ""
         });
-        if (!this.cfg.fogging && this.masks.current === mask.titleId) {
-          colorRGB = Snap.getRGB(mask.color);
-          this.$masks[mask.titleId].paths[newIndex].attr({
-            fill: "rgba(" + colorRGB.r + "," + colorRGB.g + "," + colorRGB.b + ",.4)"
-          });
-        }
-        if (this.masks.current && this.masks.current === mask.titleId) {
-          this.$masks[mask.titleId].images[newIndex].attr({
-            display: ""
-          });
-        }
       }
-      this.frames.previous = newIndex;
+      if (this.masks.current) {
+        this.pathSelect(this.masks.current, frameCurrent);
+      }
+      this.frames.previous = frameCurrent;
     };
     WBTRotator.prototype.startAutoRotate = function() {
       setInterval(((function(_this) {
@@ -714,11 +719,12 @@ Created by WB—Tech, http://wbtech.pro/
     };
     WBTRotator.prototype.stopAutoRotate = function() {};
     WBTRotator.prototype.changeLocale = function(e) {
-      this.cfg.language = $(e.target).val();
+      this.cfg.language = $(e.target).val().toUpperCase();
       return this.updateLocalization();
     };
     WBTRotator.prototype.updateLocalization = function(isFirstTime) {
       var $descriptionsActive, $descriptionsList, $descriptionsPrevious, $el, $heading, $headingTextActive, $headingTextPrevious, $titlesItems, $titlesItemsActive, $titlesItemsPrevious, $titlesList, animationTime, titleId, val, _ref, _ref1;
+      this.$el.attr("lang", this.cfg.language);
       animationTime = isFirstTime ? 0 : 500;
       $titlesList = $(".wbt-rotator-titles_list");
       $titlesItems = $(".wbt-rotator-titles_item");
@@ -764,7 +770,7 @@ Created by WB—Tech, http://wbtech.pro/
         if (val === "{{EN}}") {
           val = $.wbtRotator.l10n["en"].masks[titleId].title;
         }
-        $el.children("span").eq(0).text(val);
+        $el.attr("title", val).children("span").eq(0).text(val);
       }
       _ref1 = this.$legendDescriptions;
       for (titleId in _ref1) {
