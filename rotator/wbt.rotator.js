@@ -391,7 +391,7 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.loadComplete = function() {
-      this.$elContent.on("" + ($.wbtIsTouch() ? "singleTap" : "click") + ".wbt-rotator", "image", $.proxy(this.pathDeselect, this, null));
+      this.$elContent.on("" + ($.wbtIsTouch() ? "singleTap" : "click") + ".wbt-rotator", "image", $.proxy(this.onPathClick, this, null, null));
       this.$frames = this.$elContent.children(".wbt-rotator-image");
       this.changeFrame(this.frames.current);
       this.$el.removeClass("wbt-rotator__loading").addClass("wbt-rotator__loaded");
@@ -458,7 +458,7 @@ Created by WB—Tech, http://wbtech.pro/
         mask = _ref[_i];
         if (mask.titleId === title) {
           this.$masks[mask.titleId].paths[frame].attr({
-            "stroke-width": 1
+            "stroke-width": .5
           });
           if (this.cfg.fogging) {
             this.$masks[mask.titleId].paths[frame].attr({
@@ -480,6 +480,9 @@ Created by WB—Tech, http://wbtech.pro/
     };
     WBTRotator.prototype.pathDeselect = function(title, frame) {
       var mask, _i, _len, _ref;
+      if (title == null) {
+        title = this.masks.current;
+      }
       if (frame == null) {
         frame = this.frames.current;
       }
@@ -502,7 +505,11 @@ Created by WB—Tech, http://wbtech.pro/
     };
     WBTRotator.prototype.onPathClick = function(el, e) {
       var mask, title, _i, _len, _ref, _results;
-      title = el ? el.data("title") : $(e.target).data("title") || $(e.target).closest("li").data("title");
+      if ((el != null) || (e != null)) {
+        title = el ? el.data("title") : $(e.target).data("title") || $(e.target).closest("li").data("title");
+      } else {
+        title = this.masks.current;
+      }
       if (this.masks.current && this.masks.current === title) {
         this.pathDeselect(this.masks.current);
         this.masks.current = "";

@@ -335,7 +335,7 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::loadComplete = ->
-    @$elContent.on "#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator", "image", $.proxy(@pathDeselect, @, null)
+    @$elContent.on "#{if $.wbtIsTouch() then "singleTap" else "click"}.wbt-rotator", "image", $.proxy(@onPathClick, @, null, null)
     @$frames = @$elContent.children(".wbt-rotator-image")
     @changeFrame @frames.current
     @$el.removeClass("wbt-rotator__loading").addClass "wbt-rotator__loaded"
@@ -394,7 +394,7 @@ Created by WB—Tech, http://wbtech.pro/
   WBTRotator::pathSelect = (title, frame = @frames.current)->
     for mask in @cfg.maskSrc
       if mask.titleId is title
-        @$masks[mask.titleId].paths[frame].attr "stroke-width": 1
+        @$masks[mask.titleId].paths[frame].attr "stroke-width": .5
         if @cfg.fogging
           @$masks[mask.titleId].paths[frame].attr fill: "rgba(255,255,255,0)"
         else
@@ -403,7 +403,7 @@ Created by WB—Tech, http://wbtech.pro/
     if @cfg.fogging
       @$el.addClass("wbt-rotator-mask__active")
 
-  WBTRotator::pathDeselect = (title, frame = @frames.current)->
+  WBTRotator::pathDeselect = (title = @masks.current, frame = @frames.current)->
     for mask in @cfg.maskSrc
       if mask.titleId is title
         @$masks[mask.titleId].paths[frame].attr "stroke-width": 0, fill: "rgba(255,255,255,0)"
@@ -412,9 +412,13 @@ Created by WB—Tech, http://wbtech.pro/
       @$el.removeClass("wbt-rotator-mask__active")
 
   WBTRotator::onPathClick = (el, e)->
-    # Title is either path.data or jQuery event's data attribute
-    # This is to have single handler for legend and path clicks
-    title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest("li").data("title")
+    if el? or e?
+      # Title is either path.data or jQuery event's data attribute
+      # This is to have single handler for legend and path clicks
+      title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest("li").data("title")
+    else
+      # Otherwise it's current selected mask to remove selection on empty region click
+      title = @masks.current
 
     # When this path was clicked again
     if @masks.current and @masks.current is title
