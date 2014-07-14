@@ -61,6 +61,14 @@ Created by WB—Tech, http://wbtech.pro/
       x: 0
       y: 0
 
+    @sliderPressed = false
+    @sliderPosition =
+      x: 0
+      y: 0
+      current: 0
+      xMax: 0
+      yMax: 0
+
     return $.wbtError("Specify non empty rotator placeholder.") unless @$el.length
     return $.wbtError("Specify 'src' in $().wbtRotator() call.") if not @cfg.frameSrc
 
@@ -161,6 +169,13 @@ Created by WB—Tech, http://wbtech.pro/
     else
       $style.html cssText
 
+    # Load Scroll Slider
+    if @cfg.slider
+      @$maskScroll = $('<div class="wbt-rotator-scroll"></div>').appendTo(@$elContent)
+      @$maskScrollPath = $('<div class="wbt-rotator-scroll_path"></div>').appendTo(@$maskScroll)
+      @$maskScrollTrack = $('<div class="wbt-rotator-scroll_track"></div>').appendTo(@$maskScrollPath)
+      @$maskScrollSlider = $('<div class="wbt-rotator-scroll_slider"></div>').appendTo(@$maskScrollPath)
+      @$maskScroll.on "#{if $.wbtIsTouch() then "touchstart" else "mousedown"}.wbt-rotator", $.proxy(@onSliderPointerDown, this)
     return
 
   WBTRotator::defaults =
@@ -177,10 +192,11 @@ Created by WB—Tech, http://wbtech.pro/
     invertAxes: false # false: horizontal; true: vertical
     invertMouse: false # false: counter-clockwise; true: clockwise
     invertAutoRotate: false # false: counter-clockwise; true: clockwise
-    enableMouseWheel: true
+    enableMouseWheel: false
     circular: true
     fogging: true
     legend: true
+    slider: true
     cursor: "grab"
 
   WBTRotator::registerEvents = ->
@@ -345,16 +361,25 @@ Created by WB—Tech, http://wbtech.pro/
 
   WBTRotator::onPointerDown = (e) ->
 #    (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
-    @$el.addClass "wbt-rotator__active"
-    @pointerPressed = true and @cfg.rotateManual
-    if e.touches and e.touches.length > 1
-      @pointerPressed = false
+    if $(e.target).closest(".wbt-rotator-scroll").length
+      if $(e.target).hasClass "wbt-rotator-scroll_slider"
+        @sliderPressed = true
+        @sliderPosition.x = e.pageX
+        @sliderPosition.y = e.pageY
+        @sliderPosition.max = if @cfg.invertAxes then @$maskScrollPath.height() else @$maskScrollPath.width()
+        @sliderPosition.current = parseInt(@$maskScrollSlider.css "left")
     else
-      @pointerPosition.x = e.pageX
-      @pointerPosition.y = e.pageY
+      @$el.addClass "wbt-rotator__active"
+      @pointerPressed = @cfg.rotateManual and not (e.touches and e.touches.length > 1)
+      if @pointerPressed
+        @pointerPosition.x = e.pageX
+        @pointerPosition.y = e.pageY
     return
 
   WBTRotator::onPointerUp = ->
+    if @sliderPressed
+      @sliderPressed = false
+
     if @pointerPressed
       @$el.removeClass "wbt-rotator__active"
       @pointerPressed = false
@@ -362,17 +387,32 @@ Created by WB—Tech, http://wbtech.pro/
     return
 
   WBTRotator::onPointerMove = (e) ->
+    if e.touches
+      x = e.touches[0].pageX
+      y = e.touches[0].pageY
+    else
+      x = e.pageX
+      y = e.pageX
+
+    if @sliderPressed
+      newPosition = @sliderPosition.current
+      if @cfg.invertAxes
+        newPosition += y - @sliderPosition.y
+      else
+        newPosition += x - @sliderPosition.x
+
+      if newPosition < 0
+        newPosition = 0
+      if newPosition > @sliderPosition.max
+        newPosition = @sliderPosition.max
+
+      @frames.current = Math.floor(newPosition * (@frames.total-1) / @sliderPosition.max)
+      @changeFrame @frames.current
+
     if @pointerPressed
       if not e.touches or e.touches and e.touches.length == 1
         (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
       # TODO allow pinch zoom even after changeFrame (not working now)
-
-      if e.touches
-        x = e.touches[0].pageX
-        y = e.touches[0].pageY
-      else
-        x = e.pageX
-        y = e.pageX
 
       if @cfg.invertAxes
         delta = y - @pointerPosition.y
@@ -467,6 +507,18 @@ Created by WB—Tech, http://wbtech.pro/
       for mask in @cfg.maskSrc
         @$legendTitles[mask.titleId].removeClass("wbt-rotator-titles_item__hover")
         @$legendDescriptions[mask.titleId].removeClass("wbt-rotator-descriptions_item__hover")
+
+
+  WBTRotator::onSliderPointerDown = (e)->
+    return if $(e.target).hasClass("wbt-rotator-scroll_slider")
+
+    @onPointerDown
+      target: @$maskScrollSlider
+      pageX: parseInt @$maskScrollSlider.offset().left + @$maskScrollSlider.width() / 2
+      pageY: parseInt @$maskScrollSlider.offset().top
+    @onPointerMove
+      pageX: e.pageX
+      pageY: e.pageY
 
 
   # TODO: add momentum
@@ -569,6 +621,12 @@ Created by WB—Tech, http://wbtech.pro/
       @$masks[mask.titleId].paths[@frames.previous].attr display: "none", "stroke-width": 0, fill: "rgba(255,255,255,0)"
       @$masks[mask.titleId].images[@frames.previous].attr display: "none"
       @$masks[mask.titleId].paths[frameCurrent].attr display: ""
+
+    # Change scroll slider position
+    if @cfg.slider
+      positionPercent = Math.floor (frameCurrent / (@frames.total-1) * 100)
+      @$maskScrollSlider.css "left", "#{positionPercent}%"
+      @$maskScrollTrack.css "width", "#{positionPercent}%"
 
     # Show selected path
     if @masks.current

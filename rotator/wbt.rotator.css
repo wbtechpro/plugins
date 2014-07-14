@@ -34,6 +34,12 @@
     .wbt-rotator-titles_list {float:none;width:auto;max-width:none;margin:0;}
     .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;margin:20px 0 0;}
 }
+.wbt-rotator-scroll {position:absolute;z-index:3;left:6.25%;bottom:16px;right:6.25%;height:16px;border:1px solid rgba(255,255,255,.3);border-radius:6px;cursor:pointer;}
+.wbt-rotator-scroll_path {position:relative;height:100%;margin:0 102px 0 0;}
+.wbt-rotator-scroll_track {position:absolute;left:0;top:0;bottom:0;width:0%;padding-right:6px;background:rgba(255,255,255,.1);}
+.wbt-rotator-scroll_slider {position:absolute;left:0%;top:0;bottom:0;width:102px;background:#9d9d9d;border-radius:6px;}
+.wbt-rotator-scroll_slider:before {content:"";position:absolute;left:50%;top:50%;width:2px;height:7px;margin:-3px 0 0 -4px;border-left:1px solid #5c5c5c;border-right:1px solid #5c5c5c;}
+.wbt-rotator-scroll_slider:after {content:"";position:absolute;left:50%;top:50%;width:2px;height:7px;margin:-3px 0 0 2px;border-left:1px solid #5c5c5c;}
 
 /* Cursors*/
 .wbt-rotator__loaded {cursor:default;}

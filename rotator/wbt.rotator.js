@@ -70,6 +70,14 @@ Created by WB—Tech, http://wbtech.pro/
         x: 0,
         y: 0
       };
+      this.sliderPressed = false;
+      this.sliderPosition = {
+        x: 0,
+        y: 0,
+        current: 0,
+        xMax: 0,
+        yMax: 0
+      };
       if (!this.$el.length) {
         return $.wbtError("Specify non empty rotator placeholder.");
       }
@@ -172,6 +180,13 @@ Created by WB—Tech, http://wbtech.pro/
       } else {
         $style.html(cssText);
       }
+      if (this.cfg.slider) {
+        this.$maskScroll = $('<div class="wbt-rotator-scroll"></div>').appendTo(this.$elContent);
+        this.$maskScrollPath = $('<div class="wbt-rotator-scroll_path"></div>').appendTo(this.$maskScroll);
+        this.$maskScrollTrack = $('<div class="wbt-rotator-scroll_track"></div>').appendTo(this.$maskScrollPath);
+        this.$maskScrollSlider = $('<div class="wbt-rotator-scroll_slider"></div>').appendTo(this.$maskScrollPath);
+        this.$maskScroll.on("" + ($.wbtIsTouch() ? "touchstart" : "mousedown") + ".wbt-rotator", $.proxy(this.onSliderPointerDown, this));
+      }
     };
     WBTRotator.prototype.defaults = {
       language: "EN",
@@ -187,10 +202,11 @@ Created by WB—Tech, http://wbtech.pro/
       invertAxes: false,
       invertMouse: false,
       invertAutoRotate: false,
-      enableMouseWheel: true,
+      enableMouseWheel: false,
       circular: true,
       fogging: true,
       legend: true,
+      slider: true,
       cursor: "grab"
     };
     WBTRotator.prototype.registerEvents = function() {
@@ -401,16 +417,27 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.onPointerDown = function(e) {
-      this.$el.addClass("wbt-rotator__active");
-      this.pointerPressed = true && this.cfg.rotateManual;
-      if (e.touches && e.touches.length > 1) {
-        this.pointerPressed = false;
+      if ($(e.target).closest(".wbt-rotator-scroll").length) {
+        if ($(e.target).hasClass("wbt-rotator-scroll_slider")) {
+          this.sliderPressed = true;
+          this.sliderPosition.x = e.pageX;
+          this.sliderPosition.y = e.pageY;
+          this.sliderPosition.max = this.cfg.invertAxes ? this.$maskScrollPath.height() : this.$maskScrollPath.width();
+          this.sliderPosition.current = parseInt(this.$maskScrollSlider.css("left"));
+        }
       } else {
-        this.pointerPosition.x = e.pageX;
-        this.pointerPosition.y = e.pageY;
+        this.$el.addClass("wbt-rotator__active");
+        this.pointerPressed = this.cfg.rotateManual && !(e.touches && e.touches.length > 1);
+        if (this.pointerPressed) {
+          this.pointerPosition.x = e.pageX;
+          this.pointerPosition.y = e.pageY;
+        }
       }
     };
     WBTRotator.prototype.onPointerUp = function() {
+      if (this.sliderPressed) {
+        this.sliderPressed = false;
+      }
       if (this.pointerPressed) {
         this.$el.removeClass("wbt-rotator__active");
         this.pointerPressed = false;
@@ -418,7 +445,30 @@ Created by WB—Tech, http://wbtech.pro/
       }
     };
     WBTRotator.prototype.onPointerMove = function(e) {
-      var delta, x, y;
+      var delta, newPosition, x, y;
+      if (e.touches) {
+        x = e.touches[0].pageX;
+        y = e.touches[0].pageY;
+      } else {
+        x = e.pageX;
+        y = e.pageX;
+      }
+      if (this.sliderPressed) {
+        newPosition = this.sliderPosition.current;
+        if (this.cfg.invertAxes) {
+          newPosition += y - this.sliderPosition.y;
+        } else {
+          newPosition += x - this.sliderPosition.x;
+        }
+        if (newPosition < 0) {
+          newPosition = 0;
+        }
+        if (newPosition > this.sliderPosition.max) {
+          newPosition = this.sliderPosition.max;
+        }
+        this.frames.current = Math.floor(newPosition * (this.frames.total - 1) / this.sliderPosition.max);
+        this.changeFrame(this.frames.current);
+      }
       if (this.pointerPressed) {
         if (!e.touches || e.touches && e.touches.length === 1) {
           if (e.preventDefault) {
@@ -426,13 +476,6 @@ Created by WB—Tech, http://wbtech.pro/
           } else {
             e.returnValue = false;
           }
-        }
-        if (e.touches) {
-          x = e.touches[0].pageX;
-          y = e.touches[0].pageY;
-        } else {
-          x = e.pageX;
-          y = e.pageX;
         }
         if (this.cfg.invertAxes) {
           delta = y - this.pointerPosition.y;
@@ -574,6 +617,20 @@ Created by WB—Tech, http://wbtech.pro/
         return _results;
       }
     };
+    WBTRotator.prototype.onSliderPointerDown = function(e) {
+      if ($(e.target).hasClass("wbt-rotator-scroll_slider")) {
+        return;
+      }
+      this.onPointerDown({
+        target: this.$maskScrollSlider,
+        pageX: parseInt(this.$maskScrollSlider.offset().left + this.$maskScrollSlider.width() / 2),
+        pageY: parseInt(this.$maskScrollSlider.offset().top)
+      });
+      return this.onPointerMove({
+        pageX: e.pageX,
+        pageY: e.pageY
+      });
+    };
     WBTRotator.prototype.onPointerEnter = function() {};
     WBTRotator.prototype.onPointerLeave = function() {};
     WBTRotator.prototype.onScroll = function(e, delta) {
@@ -655,7 +712,7 @@ Created by WB—Tech, http://wbtech.pro/
       return true;
     };
     WBTRotator.prototype.changeFrame = function(frameCurrent) {
-      var mask, _i, _len, _ref;
+      var mask, positionPercent, _i, _len, _ref;
       if (this.cfg.circular) {
         frameCurrent += this.frames.total;
         frameCurrent %= this.frames.total;
@@ -687,6 +744,11 @@ Created by WB—Tech, http://wbtech.pro/
         this.$masks[mask.titleId].paths[frameCurrent].attr({
           display: ""
         });
+      }
+      if (this.cfg.slider) {
+        positionPercent = Math.floor(frameCurrent / (this.frames.total - 1) * 100);
+        this.$maskScrollSlider.css("left", "" + positionPercent + "%");
+        this.$maskScrollTrack.css("width", "" + positionPercent + "%");
       }
       if (this.masks.current) {
         this.pathSelect(this.masks.current, frameCurrent);
