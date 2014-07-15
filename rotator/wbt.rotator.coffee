@@ -28,6 +28,7 @@ Created by WB—Tech, http://wbtech.pro/
     @cfg.maskSrc = @cfg.masks # Alias
     for mask in @cfg.maskSrc
       mask.titleId = mask.id
+    @cfg.slider = @cfg.slider and not @cfg.circular
     @cfg.language = @cfg.language.toUpperCase()
 
     @$el = $el.addClass("wbt-rotator")
@@ -175,7 +176,7 @@ Created by WB—Tech, http://wbtech.pro/
       @$maskScrollPath = $('<div class="wbt-rotator-scroll_path"></div>').appendTo(@$maskScroll)
       @$maskScrollTrack = $('<div class="wbt-rotator-scroll_track"></div>').appendTo(@$maskScrollPath)
       @$maskScrollSlider = $('<div class="wbt-rotator-scroll_slider"></div>').appendTo(@$maskScrollPath)
-      @$maskScroll.on "#{if $.wbtIsTouch() then "touchstart" else "mousedown"}.wbt-rotator", $.proxy(@onSliderPointerDown, this)
+      @$maskScroll[0].addEventListener (if $.wbtIsTouch() then "touchstart" else "mousedown"), $.proxy(@onSliderPointerDown, this)
     return
 
   WBTRotator::defaults =
@@ -361,8 +362,9 @@ Created by WB—Tech, http://wbtech.pro/
 
   WBTRotator::onPointerDown = (e) ->
 #    (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
-    if $(e.target).closest(".wbt-rotator-scroll").length
-      if $(e.target).hasClass "wbt-rotator-scroll_slider"
+    $target = $(e.target)
+    if $target.closest(".wbt-rotator-scroll").length
+      if $target.hasClass "wbt-rotator-scroll_slider"
         @sliderPressed = true
         @sliderPosition.x = e.pageX
         @sliderPosition.y = e.pageY
@@ -394,6 +396,10 @@ Created by WB—Tech, http://wbtech.pro/
       x = e.pageX
       y = e.pageX
 
+    if not e.touches or e.touches and e.touches.length == 1
+      (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
+    # TODO allow pinch zoom even after changeFrame (not working now)
+
     if @sliderPressed
       newPosition = @sliderPosition.current
       if @cfg.invertAxes
@@ -410,10 +416,6 @@ Created by WB—Tech, http://wbtech.pro/
       @changeFrame @frames.current
 
     if @pointerPressed
-      if not e.touches or e.touches and e.touches.length == 1
-        (if (e.preventDefault) then e.preventDefault() else e.returnValue = false)
-      # TODO allow pinch zoom even after changeFrame (not working now)
-
       if @cfg.invertAxes
         delta = y - @pointerPosition.y
       else
@@ -512,13 +514,25 @@ Created by WB—Tech, http://wbtech.pro/
   WBTRotator::onSliderPointerDown = (e)->
     return if $(e.target).hasClass("wbt-rotator-scroll_slider")
 
+    pageX = parseInt @$maskScrollSlider.offset().left + @$maskScrollSlider.width() / 2
+    pageY = parseInt @$maskScrollSlider.offset().top + @$maskScrollSlider.height() / 2
+
     @onPointerDown
       target: @$maskScrollSlider
-      pageX: parseInt @$maskScrollSlider.offset().left + @$maskScrollSlider.width() / 2
-      pageY: parseInt @$maskScrollSlider.offset().top
+      pageX: pageX
+      pageY: pageY
+      touches: [
+        pageX: pageX
+        pageY: pageY
+      ]
+
     @onPointerMove
       pageX: e.pageX
       pageY: e.pageY
+      touches: [
+        pageX: e.pageX
+        pageY: e.pageY
+      ]
 
 
   # TODO: add momentum
