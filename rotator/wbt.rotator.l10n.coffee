@@ -1,6 +1,9 @@
 $.wbtRotator.l10n =
   EN:
-    heading: "Bones"
+    heading: "Human Skull"
+    categories:
+      small: "Small bones"
+      jaw: "Jaw bones"
     masks:
       conchae:
         title: "Inferior nasal conchae"
@@ -46,7 +49,10 @@ $.wbtRotator.l10n =
         description: "Zygomatic bones further connects the frontal bone with the upper jaw and the temporal bones. Zygomatic bones have temporal, frontal and maxillary processes, that allows the articulation with the corresponding bones. Temporal process of the zygomatic bone together with zygomatic process of the temporal bone make a zygomatic arch."
 
   RU:
-    heading: "Кости"
+    heading: "Череп человека"
+    categories:
+      small: "Мелкие кости"
+      jaw: "Кости челюсти"
     masks:
       conchae:
         title: "Нижние носовые раковины"
@@ -92,231 +98,156 @@ $.wbtRotator.l10n =
         description: "Скуловые кости дополнительно соединяют лобную кость с верхней челюстью и височными костями. Скуловые кости имеют височные отростки, соединяющиеся со скуловыми отростками височных костей, образуя скуловые дуги, а также лобные отростки, соединяющиеся с лобной костью и большими кряльями клиновидной кости."
 
   LA:
-    heading: "{{EN}}"
     masks:
       conchae:
         title: "Conchae nasalis inferior"
-        description: "{{EN}}"
       ethmoid:
         title: "Os ethmoideum"
-        description: "{{EN}}"
       frontal:
         title: "Os frontalis"
-        description: "{{EN}}"
       lacrimalis:
         title: "Os lacrimalis"
-        description: "{{EN}}"
       mandible:
         title: "Mandible"
-        description: "{{EN}}"
       maxilla:
         title: "Maxilla"
-        description: "{{EN}}"
       nasal:
         title: "Os nasalis"
-        description: "{{EN}}"
       occipital:
         title: "Os occipitalis"
-        description: "{{EN}}"
       palatine:
         title: "Os palatinum"
-        description: "{{EN}}"
       parietal:
         title: "Os parietalis"
-        description: "{{EN}}"
       sphenoid:
         title: "Os sphenoidale"
-        description: "{{EN}}"
       temporal:
         title: "Os temporalis"
-        description: "{{EN}}"
       vomer:
         title: "Vomer"
-        description: "{{EN}}"
       zygomatic:
         title: "Os zygomaticum"
-        description: "{{EN}}"
 
   CN:
-    heading: "{{EN}}"
     masks:
       conchae:
         title: "鼻下鼻甲"
-        description: "{{EN}}"
       ethmoid:
         title: "筛骨"
-        description: "{{EN}}"
       frontal:
         title: "额骨"
-        description: "{{EN}}"
       lacrimalis:
         title: "泪骨"
-        description: "{{EN}}"
       mandible:
         title: "下颚"
-        description: "{{EN}}"
       maxilla:
         title: "颚骨"
-        description: "{{EN}}"
       nasal:
         title: "鼻骨"
-        description: "{{EN}}"
       occipital:
         title: "枕骨"
-        description: "{{EN}}"
       palatine:
         title: "腭骨"
-        description: "{{EN}}"
       parietal:
         title: "顶骨"
-        description: "{{EN}}"
       sphenoid:
         title: "蝶骨"
-        description: "{{EN}}"
       temporal:
         title: "颞骨"
-        description: "{{EN}}"
       vomer:
         title: "犁骨"
-        description: "{{EN}}"
       zygomatic:
         title: "颧骨"
-        description: "{{EN}}"
 
   DE:
-    heading: "{{EN}}"
     masks:
       conchae:
         title: "Untere Nasenmuschel"
-        description: "{{EN}}"
       ethmoid:
         title: "Siebbein"
-        description: "{{EN}}"
       frontal:
         title: "Stirnbein"
-        description: "{{EN}}"
       lacrimalis:
         title: "Tränen Knochen"
-        description: "{{EN}}"
       mandible:
         title: "Unterkiefer"
-        description: "{{EN}}"
       maxilla:
         title: "Oberkiefer"
-        description: "{{EN}}"
       nasal:
         title: "Nasenknochen"
-        description: "{{EN}}"
       occipital:
         title: "Hinterhauptbein"
-        description: "{{EN}}"
       palatine:
         title: "Palatine Knochen"
-        description: "{{EN}}"
       parietal:
         title: "Scheitelbeine"
-        description: "{{EN}}"
       sphenoid:
         title: "Keilbein"
-        description: "{{EN}}"
       temporal:
         title: "Temporal Knochen"
-        description: "{{EN}}"
       vomer:
         title: "Vomer"
-        description: "{{EN}}"
       zygomatic:
         title: "Jochbein Knochen"
-        description: "{{EN}}"
 
   ES:
-    heading: "{{EN}}"
     masks:
       conchae:
         title: "Concha nasal inferior"
-        description: "{{EN}}"
       ethmoid:
         title: "Hueso etmoides"
-        description: "{{EN}}"
       frontal:
         title: "Hueso frontal"
-        description: "{{EN}}"
       lacrimalis:
         title: "Huesos lacrimales"
-        description: "{{EN}}"
       mandible:
         title: "Mandíbula"
-        description: "{{EN}}"
       maxilla:
         title: "Maxilar superior"
-        description: "{{EN}}"
       nasal:
         title: "Huesos nasales"
-        description: "{{EN}}"
       occipital:
         title: "Hueso occipital"
-        description: "{{EN}}"
       palatine:
         title: "Huesos palatinos"
-        description: "{{EN}}"
       parietal:
         title: "Huesos parietales"
-        description: "{{EN}}"
       sphenoid:
         title: "Hueso esfenoides"
-        description: "{{EN}}"
       temporal:
         title: "Huesos temporal"
-        description: "{{EN}}"
       vomer:
         title: "Vomer"
-        description: "{{EN}}"
       zygomatic:
         title: "Huesos cigomáticos"
-        description: "{{EN}}"
 
   FR:
-    heading: "{{EN}}"
     masks:
       conchae:
         title: "Inférieur cornets nasaux"
-        description: "{{EN}}"
       ethmoid:
         title: "Os ethmoïde"
-        description: "{{EN}}"
       frontal:
         title: "Os frontal"
-        description: "{{EN}}"
       lacrimalis:
         title: "Os lacrymaux"
-        description: "{{EN}}"
       mandible:
         title: "Mandibule"
-        description: "{{EN}}"
       maxilla:
         title: "Maxillaire"
-        description: "{{EN}}"
       nasal:
         title: "Os du nez"
-        description: "{{EN}}"
       occipital:
         title: "Os occipital"
-        description: "{{EN}}"
       palatine:
         title: "Os palatins"
-        description: "{{EN}}"
       parietal:
         title: "Os pariétaux"
-        description: "{{EN}}"
       sphenoid:
         title: "Os sphénoïde"
-        description: "{{EN}}"
       temporal:
         title: "Os temporaux"
-        description: "{{EN}}"
       vomer:
         title: "Vomer"
-        description: "{{EN}}"
       zygomatic:
         title: "Os zygomatiques"
-        description: "{{EN}}"

@@ -28,6 +28,10 @@ Created by WB—Tech, http://wbtech.pro/
     @cfg.maskSrc = @cfg.masks # Alias
     for mask in @cfg.maskSrc
       mask.titleId = mask.id
+    @cfg.masksCategories.unshift
+      id: "none"
+      title: ""
+      masks: []
     @cfg.slider = @cfg.slider and not @cfg.circular
     @cfg.language = @cfg.language.toUpperCase()
 
@@ -111,19 +115,38 @@ Created by WB—Tech, http://wbtech.pro/
     if @cfg.legend
       @$maskLegend = $("<div></div>").attr("class": "wbt-rotator-legend").appendTo(@$el) # TODO don't need these vars?
       @$legendHeading = $("<div><span class='wbt-rotator-heading_text'></span></div>").attr("class": "wbt-rotator-heading").appendTo(@$maskLegend)
-      @$maskTitles = $("<ul></ul>").attr("class": "wbt-rotator-titles_list").appendTo(@$maskLegend)
+      @$maskTitles = $("<div></div>").attr("class": "wbt-rotator-titles_list").appendTo(@$maskLegend)
       @$maskDescriptions = $("<ul></ul>").attr("class": "wbt-rotator-descriptions_list").appendTo(@$maskLegend)
+
+      # Set categories for masks
+      for category in @cfg.masksCategories
+        for maskToShow in category.masks
+          for mask in @cfg.maskSrc
+            if maskToShow is mask.id
+              mask.category = category.id
+
+      # Not meitioned in maskCategories masks gets 'none' category
       for mask in @cfg.maskSrc
-        $legendTitle = $("<li></li>").attr("class", "wbt-rotator-titles_item").appendTo(@$maskTitles).data("title", mask.titleId)
-        $("<span></span>").attr("class", "wbt-rotator-titles_text").appendTo($legendTitle).html(mask.titleId)
-        $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo($legendTitle).css("background-color": mask.color or "#fff")
-        $legendDescription = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(@$maskDescriptions).data("title", mask.titleId).html(mask.titleId)
-        @$legendTitles[mask.titleId] = $legendTitle
-        @$legendDescriptions[mask.titleId] = $legendDescription
-      @$maskTitles.on "#{if $.wbtIsTouch() then "singleTap" else "click"}", "li", $.proxy(@onPathClick, @, null) # Sending null to set proper arguments order for both click and hover events
+        if not mask.category
+          mask.category = "none"
+
+      # Create legend items in categories
+      for category in @cfg.masksCategories
+        if category.id isnt "none"
+          $categoryTitle = $("<div></div>").attr("class", "wbt-rotator-category_title").appendTo(@$maskTitles).data("title", category.id)
+        $categoryWrap = $("<div></div>").attr("class", "wbt-rotator-category_wrap").appendTo(@$maskTitles).data("title", category.id)
+
+        for mask in @cfg.maskSrc
+          if mask.category is category.id
+            @$legendTitles[mask.titleId] = $("<div></div>").attr("class", "wbt-rotator-titles_item").appendTo($categoryWrap).data("title", mask.titleId)
+            $("<span></span>").attr("class", "wbt-rotator-titles_text").appendTo(@$legendTitles[mask.titleId]).html(mask.titleId)
+            $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo(@$legendTitles[mask.titleId]).css("background-color": mask.color or "#fff")
+            @$legendDescriptions[mask.titleId] = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(@$maskDescriptions).data("title", mask.titleId).html(mask.titleId)
+
+      @$maskLegend.on "#{if $.wbtIsTouch() then "singleTap" else "click"}", ".wbt-rotator-titles_item", $.proxy(@onPathClick, @, null) # Sending null to set proper arguments order for both click and hover events
       if not $.wbtIsTouch()
-        @$maskTitles.on "mouseover", "li", $.proxy(@onPathOver, @, null)
-        @$maskTitles.on "mouseout", "li",  $.proxy(@onPathOut, @, null)
+        @$maskLegend.on "mouseover", ".wbt-rotator-titles_item", $.proxy(@onPathOver, @, null)
+        @$maskLegend.on "mouseout", ".wbt-rotator-titles_item",  $.proxy(@onPathOut, @, null)
 
       # Create language dropdown
       if $.wbtRotator.l10n?
@@ -136,7 +159,7 @@ Created by WB—Tech, http://wbtech.pro/
           .on("change", $.proxy(@changeLocale, this))
           .parent().find(".wbt-input-select_options").css("background-color": @$el.css("background-color"), "box-shadow": "0 0 1px 1px #{@$el.css("background-color")}")
 
-        @updateLocalization(true)
+        @updateLocalization(0)
 
     # Load Theme
     if @cfg.theme
@@ -185,6 +208,7 @@ Created by WB—Tech, http://wbtech.pro/
     frameSrc: ""
     frameFirst: 0
     first: 0
+    masksCategories: []
     leadingZero: true
     autoLoad: true
     rotateAuto: false
@@ -198,6 +222,7 @@ Created by WB—Tech, http://wbtech.pro/
     fogging: true
     legend: true
     slider: true
+    animationDuration: 500
     cursor: "grab"
 
   WBTRotator::registerEvents = ->
@@ -457,7 +482,7 @@ Created by WB—Tech, http://wbtech.pro/
     if el? or e?
       # Title is either path.data or jQuery event's data attribute
       # This is to have single handler for legend and path clicks
-      title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest("li").data("title")
+      title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest(".wbt-rotator-titles_item").data("title")
     else
       # Otherwise it's current selected mask to remove selection on empty region click
       title = @masks.current
@@ -485,7 +510,7 @@ Created by WB—Tech, http://wbtech.pro/
         @$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId is @masks.current)
 
   WBTRotator::onPathOver = (el, e)->
-    title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest("li").data("title")
+    title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest(".wbt-rotator-titles_item").data("title")
     # Hover mask it is the one that was hovered
     for mask in @cfg.maskSrc
       if mask.titleId is title and mask.titleId isnt @masks.current
@@ -499,7 +524,7 @@ Created by WB—Tech, http://wbtech.pro/
 
 
   WBTRotator::onPathOut = (el, e)->
-    title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest("li").data("title")
+    title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest(".wbt-rotator-titles_item").data("title")
     # Remove hover
     if @cfg.fogging or title isnt @masks.current
       @$masks[title].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
@@ -665,29 +690,14 @@ Created by WB—Tech, http://wbtech.pro/
     @cfg.language = $(e.target).val().toUpperCase()
     @updateLocalization()
 
-  WBTRotator::updateLocalization = (isFirstTime)->
+  WBTRotator::updateLocalization = (duration = @cfg.animationDuration)->
     @$el.attr "lang", @cfg.language
-    animationTime = if isFirstTime then 0 else 500
-    $titlesList = $(".wbt-rotator-titles_list")
-    $titlesItems = $(".wbt-rotator-titles_item")
-    $titlesItemsActive = $(".wbt-rotator-titles_item__active")
-    $titlesItemsPrevious = $titlesItems.clone().appendTo $titlesList
-    $titlesItemsPrevious.each (index, el)->
-      $(el).css
-        opacity: "0"
-        position: "absolute"
-        left: "0"
-        right: "0"
-        top: index * 30 + "px"
-    $descriptionsList = $(".wbt-rotator-descriptions_list")
-    $descriptionsActive = $(".wbt-rotator-descriptions_item__active")
-    $descriptionsPrevious = $descriptionsActive.clone().appendTo $descriptionsList
-    $descriptionsPrevious.css
-      opacity: "0"
-      position: "absolute"
-      left: "0"
-      right: "0"
-      top: "0"
+    @localizeHeading(duration)
+    @localizeCategories(duration)
+    @localizeTitles(duration)
+    @localizeDescriptions(duration)
+
+  WBTRotator::localizeHeading = (duration)->
     $heading = $(".wbt-rotator-heading")
     $headingTextActive = $(".wbt-rotator-heading_text")
     $headingTextPrevious = $headingTextActive.clone().appendTo $heading
@@ -697,45 +707,105 @@ Created by WB—Tech, http://wbtech.pro/
       left: "0"
       top: "0"
 
-    # Change heading
+    # Change heading text
     val = $.wbtRotator.l10n[@cfg.language].heading
-    val = $.wbtRotator.l10n["EN"].heading if val is "{{EN}}"
+    if val is "{{EN}}" or not val
+      val = $.wbtRotator.l10n["EN"].heading
     $headingTextActive.text(val)
 
-    # Change titles
-    for titleId, $el of @$legendTitles
-      val = $.wbtRotator.l10n[@cfg.language].masks[titleId].title
-      val = $.wbtRotator.l10n["en"].masks[titleId].title if val is "{{EN}}"
-      $el.attr("title", val).children("span").eq(0).text(val)
-
-    # Change descriptions
-    for titleId, $el of @$legendDescriptions
-      val = $.wbtRotator.l10n[@cfg.language].masks[titleId].description
-      val = $.wbtRotator.l10n["EN"].masks[titleId].description if val is "{{EN}}"
-      $el.html(val)
-
-    # Sorting
-    # Create copy of previous state
-
-    # Do the sorting
-    $titlesItems.sort (a, b)->
-      return 1 if $(a).text() > $(b).text()
-      return -1 if $(a).text() < $(b).text()
-      return 0
-    $titlesItems.appendTo $titlesList
-
-    # Animate sort change
-    $headingTextActive.css(opacity: 0).animate {opacity: "1"}, animationTime
-    $headingTextPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
+    # Animate
+    $headingTextActive.css(opacity: 0).animate {opacity: "1"}, duration
+    $headingTextPrevious.css(opacity: 1).animate {opacity: "0"}, duration, ->
       $headingTextPrevious.remove()
 
-    $titlesItems.css(opacity: 0).animate {opacity: "1"}, animationTime
-    $titlesItemsPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
-      $titlesItemsPrevious.remove()
 
-    $descriptionsActive.css(opacity: 0).animate {opacity: "1"}, animationTime
-    $descriptionsPrevious.css(opacity: 1).animate {opacity: "0"}, animationTime, ->
+  WBTRotator::localizeCategories = (duration)->
+    for category in $(".wbt-rotator-category_title")
+      $category = $(category)
+      $categoryPrevious = $category.clone().insertBefore $category
+      $categoryPrevious.css
+        opacity: "0"
+        position: "absolute"
+        left: "0"
+
+      # Change heading text
+      titleId = $category.data("title")
+      if $.wbtRotator.l10n[@cfg.language].categories
+        val = $.wbtRotator.l10n[@cfg.language].categories[titleId]
+        if val is "{{EN}}" or not val
+          val = $.wbtRotator.l10n["EN"].categories[titleId]
+      else
+        val = $.wbtRotator.l10n["EN"].categories[titleId]
+      $category.text(val)
+
+      # Animate
+      animationCallback = ($itemsToRemove)->
+        ->
+          $itemsToRemove.remove()
+      $category.css(opacity: 0).animate {opacity: "1"}, duration
+      $categoryPrevious.css(opacity: 1).animate {opacity: "0"}, duration, animationCallback($categoryPrevious)
+
+
+  WBTRotator::localizeTitles = (duration)->
+    for titlesList in $(".wbt-rotator-category_wrap")
+      $titlesList = $(titlesList)
+      $titlesItems = $titlesList.find(".wbt-rotator-titles_item")
+      $titlesItemsPrevious = $titlesItems.clone().appendTo $titlesList
+      $titlesItemsPrevious.each (index, el)->
+        $(el).css
+          opacity: "0"
+          position: "absolute"
+          left: "0"
+          right: "0"
+          top: index * 30 + "px"
+
+      # Change titles text
+      $titlesItems.each (index, el)=>
+        $el = $(el)
+        titleId = $el.data("title")
+        val = $.wbtRotator.l10n[@cfg.language].masks[titleId].title
+        if val is "{{EN}}" or not val
+          val = $.wbtRotator.l10n["en"].masks[titleId].title
+        $el.attr("title", val).children("span").eq(0).text(val)
+
+      # Sort titles
+      $titlesItems.sort (a, b)->
+        return 1 if $(a).text() > $(b).text()
+        return -1 if $(a).text() < $(b).text()
+        return 0
+      $titlesItems.appendTo $titlesList
+
+      # Animate
+      animationCallback = ($itemsToRemove)->
+        ->
+          $itemsToRemove.remove()
+      $titlesItems.css(opacity: 0).animate {opacity: "1"}, duration
+      $titlesItemsPrevious.css(opacity: 1).animate {opacity: "0"}, duration, animationCallback($titlesItemsPrevious)
+
+
+  WBTRotator::localizeDescriptions = (duration)->
+    $descriptionsList = $(".wbt-rotator-descriptions_list")
+    $descriptionsActive = $(".wbt-rotator-descriptions_item__active")
+    $descriptionsPrevious = $descriptionsActive.clone().appendTo $descriptionsList
+    $descriptionsPrevious.css
+      opacity: "0"
+      position: "absolute"
+      left: "0"
+      right: "0"
+      top: "0"
+
+    # Change descriptions text
+    for titleId, $el of @$legendDescriptions
+      val = $.wbtRotator.l10n[@cfg.language].masks[titleId].description
+      if val is "{{EN}}" or not val
+        val = $.wbtRotator.l10n["EN"].masks[titleId].description
+      $el.html(val)
+
+    # Animate
+    $descriptionsActive.css(opacity: 0).animate {opacity: "1"}, duration
+    $descriptionsPrevious.css(opacity: 1).animate {opacity: "0"}, duration, ->
       $descriptionsPrevious.remove()
+
 
   $.wbtError = (error) ->
     console.error error  if window.console and window.console.error
