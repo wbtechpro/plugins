@@ -1,10 +1,10 @@
 ###
-wbt.rotator.js v2.1.0
+wbt.rotator.js v3.0.0
 
 Dependencies: jQuery 1.7+, Snap SVG 0.2+
 
 Basic usage:
-$(".any-selector").wbtRotator({
+$(".any-non-empty-selector").wbtRotator({
   src: "path/template/{{30}}.jpg",
   masks: [{
     title: "First Mask",
@@ -70,9 +70,8 @@ Created by WB—Tech, http://wbtech.pro/
     @sliderPosition =
       x: 0
       y: 0
+      max: 0
       current: 0
-      xMax: 0
-      yMax: 0
 
     return $.wbtError("Specify non empty rotator placeholder.") unless @$el.length
     return $.wbtError("Specify 'src' in $().wbtRotator() call.") if not @cfg.frameSrc
@@ -140,7 +139,7 @@ Created by WB—Tech, http://wbtech.pro/
           if mask.category is category.id
             @$legendTitles[mask.titleId] = $("<div></div>").attr("class", "wbt-rotator-titles_item").appendTo($categoryWrap).data("title", mask.titleId)
             $("<span></span>").attr("class", "wbt-rotator-titles_text").appendTo(@$legendTitles[mask.titleId]).html(mask.titleId)
-            $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo(@$legendTitles[mask.titleId]).css("background-color": mask.color or "#fff")
+            $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo(@$legendTitles[mask.titleId]).css("background-color": mask.color or @cfg.mask.color)
             @$legendDescriptions[mask.titleId] = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(@$maskDescriptions).data("title", mask.titleId).html(mask.titleId)
 
       @$maskLegend.on "#{if $.wbtIsTouch() then "singleTap" else "click"}", ".wbt-rotator-titles_item", $.proxy(@onPathClick, @, null) # Sending null to set proper arguments order for both click and hover events
@@ -223,6 +222,13 @@ Created by WB—Tech, http://wbtech.pro/
     legend: true
     slider: true
     animationDuration: 500
+    mask:
+      color: "#fff"
+      opacity: .4
+    stroke:
+      color: "#fff"
+      width: 1
+      opacity: .4
     cursor: "grab"
 
   WBTRotator::registerEvents = ->
@@ -335,17 +341,28 @@ Created by WB—Tech, http://wbtech.pro/
     @$masks[title].paths[index] = pathGroup.attr("display", "none")
     @$masks[title].paths[index].data("id", index)
 
-    imageNew.attr("mask", pathGroup.clone().attr(fill: "#fff", display: ""))
+    imageNew.attr("mask", pathGroup.clone().attr(fill: @cfg.mask.color, display: ""))
     @$masks[title].images[index] = imageNew
     # TODO refactor end
 
     if @masks.loaded is @masks.total
       # Move all paths infront of images to make them clickable
       for mask in @cfg.maskSrc
+        # Convert color to RGB
+        mask.color = Snap.getRGB(mask.color)
+        if not mask.opacity
+          mask.opacity = @cfg.mask.opacity
+
+        # Convert stroke color to RGB
+        if mask.stroke
+          if mask.stroke.color
+            mask.stroke.color = Snap.getRGB(mask.stroke.color)
+
+        # Combine stroke object of empty + default + mask set color + mask set stroke
+        mask.stroke = $.extend({}, @cfg.stroke, {color: mask.color}, mask.stroke)
+
         for path in @$masks[mask.titleId].paths
-          colorRGB = Snap.getRGB mask.color
-          mask.colorRGB = colorRGB
-          path.attr stroke: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
+          path.attr stroke: "rgba(#{mask.stroke.color.r},#{mask.stroke.color.g},#{mask.stroke.color.b},#{mask.stroke.opacity})"
           path.attr "stroke-width": 0
           path.appendTo @maskSVG
       if @frames.loaded is @frames.total
@@ -461,11 +478,11 @@ Created by WB—Tech, http://wbtech.pro/
   WBTRotator::pathSelect = (title, frame = @frames.current)->
     for mask in @cfg.maskSrc
       if mask.titleId is title
-        @$masks[mask.titleId].paths[frame].attr "stroke-width": .5
+        @$masks[mask.titleId].paths[frame].attr "stroke-width": mask.stroke.width
         if @cfg.fogging
           @$masks[mask.titleId].paths[frame].attr fill: "rgba(255,255,255,0)"
         else
-          @$masks[mask.titleId].paths[frame].attr fill: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
+          @$masks[mask.titleId].paths[frame].attr fill: "rgba(#{mask.color.r},#{mask.color.g},#{mask.color.b},#{mask.opacity})"
         @$masks[mask.titleId].images[frame].attr display: ""
     if @cfg.fogging
       @$el.addClass("wbt-rotator-mask__active")
@@ -514,7 +531,9 @@ Created by WB—Tech, http://wbtech.pro/
     # Hover mask it is the one that was hovered
     for mask in @cfg.maskSrc
       if mask.titleId is title and mask.titleId isnt @masks.current
-        @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(#{mask.colorRGB.r},#{mask.colorRGB.g},#{mask.colorRGB.b},.4)"
+        @$masks[mask.titleId].paths[@frames.current].attr fill: "rgba(#{mask.color.r},#{mask.color.g},#{mask.color.b},#{mask.opacity})"
+        @$masks[mask.titleId].paths[@frames.current].attr "stroke-width": mask.stroke.width
+
 
     # Hover legend item
     if @cfg.legend
@@ -526,8 +545,9 @@ Created by WB—Tech, http://wbtech.pro/
   WBTRotator::onPathOut = (el, e)->
     title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest(".wbt-rotator-titles_item").data("title")
     # Remove hover
-    if @cfg.fogging or title isnt @masks.current
+    if title isnt @masks.current
       @$masks[title].paths[@frames.current].attr fill: "rgba(255,255,255,0)"
+      @$masks[title].paths[@frames.current].attr "stroke-width": 0, fill: "rgba(255,255,255,0)"
 
     # Unhover legend item
     if @cfg.legend
@@ -747,6 +767,7 @@ Created by WB—Tech, http://wbtech.pro/
 
 
   WBTRotator::localizeTitles = (duration)->
+
     for titlesList in $(".wbt-rotator-category_wrap")
       $titlesList = $(titlesList)
       $titlesItems = $titlesList.find(".wbt-rotator-titles_item")
@@ -781,7 +802,6 @@ Created by WB—Tech, http://wbtech.pro/
           $itemsToRemove.remove()
       $titlesItems.css(opacity: 0).animate {opacity: "1"}, duration
       $titlesItemsPrevious.css(opacity: 1).animate {opacity: "0"}, duration, animationCallback($titlesItemsPrevious)
-
 
   WBTRotator::localizeDescriptions = (duration)->
     $descriptionsList = $(".wbt-rotator-descriptions_list")

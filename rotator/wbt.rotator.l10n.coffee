@@ -2,7 +2,7 @@ $.wbtRotator.l10n =
   EN:
     heading: "Human Skull"
     categories:
-      small: "Small bones"
+      nasal: "Nasal bones"
       jaw: "Jaw bones"
     masks:
       conchae:
@@ -51,7 +51,7 @@ $.wbtRotator.l10n =
   RU:
     heading: "Череп человека"
     categories:
-      small: "Мелкие кости"
+      nasal: "Кости носа"
       jaw: "Кости челюсти"
     masks:
       conchae:
