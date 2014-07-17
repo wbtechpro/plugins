@@ -851,8 +851,12 @@ Created by WB—Tech, http://wbtech.pro/
     };
     WBTRotator.prototype.stopAutoRotate = function() {};
     WBTRotator.prototype.changeLocale = function(e) {
-      this.cfg.language = $(e.target).val().toUpperCase();
-      return this.updateLocalization();
+      var languageNew;
+      languageNew = $(e.target).val().toUpperCase();
+      if (languageNew !== this.cfg.language) {
+        this.cfg.language = languageNew;
+        return this.updateLocalization();
+      }
     };
     WBTRotator.prototype.updateLocalization = function(duration) {
       if (duration == null) {
@@ -935,23 +939,26 @@ Created by WB—Tech, http://wbtech.pro/
       return _results;
     };
     WBTRotator.prototype.localizeTitles = function(duration) {
-      var $titlesItems, $titlesItemsPrevious, $titlesList, animationCallback, titlesList, _i, _len, _ref, _results;
+      var $titlesItems, $titlesItemsPrevious, $titlesList, animationCallback, arrayOriginal, arraySorted, titlesList, _i, _len, _ref, _results;
       _ref = $(".wbt-rotator-category_wrap");
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         titlesList = _ref[_i];
         $titlesList = $(titlesList);
         $titlesItems = $titlesList.find(".wbt-rotator-titles_item");
-        $titlesItemsPrevious = $titlesItems.clone().appendTo($titlesList);
-        $titlesItemsPrevious.each(function(index, el) {
+        if (!duration) {
+          $titlesList.css("height", $titlesItems.length * 30);
+        }
+        $titlesItems.each(function(index, el) {
           return $(el).css({
-            opacity: "0",
-            position: "absolute",
-            left: "0",
-            right: "0",
             top: index * 30 + "px"
           });
         });
+        if (duration) {
+          $titlesItemsPrevious = $titlesItems.clone(true).addClass("wbt-rotator-titles_item__clone").appendTo($titlesList);
+        }
+        arrayOriginal = [];
+        arraySorted = [];
         $titlesItems.each((function(_this) {
           return function(index, el) {
             var $el, titleId, val;
@@ -961,34 +968,53 @@ Created by WB—Tech, http://wbtech.pro/
             if (val === "{{EN}}" || !val) {
               val = $.wbtRotator.l10n["en"].masks[titleId].title;
             }
+            arrayOriginal.push(val);
             return $el.attr("title", val).children("span").eq(0).text(val);
           };
         })(this));
-        $titlesItems.sort(function(a, b) {
-          if ($(a).text() > $(b).text()) {
-            return 1;
-          }
-          if ($(a).text() < $(b).text()) {
-            return -1;
-          }
-          return 0;
-        });
-        $titlesItems.appendTo($titlesList);
-        animationCallback = function($itemsToRemove) {
-          return function() {
-            return $itemsToRemove.remove();
+        if (duration) {
+          animationCallback = function($itemsToRestore, $itemsToRestoreParent, $itemsToRemove, total) {
+            $itemsToRestore.parent().data("count", 0);
+            return function() {
+              var count;
+              count = $itemsToRestore.parent().data("count") + 1;
+              $itemsToRestore.parent().data("count", count);
+              if (count === total) {
+                $itemsToRestore.sort(function(a, b) {
+                  var $a, $b;
+                  $a = $(a);
+                  $b = $(b);
+                  if ($a.text() > $b.text()) {
+                    return 1;
+                  }
+                  if ($a.text() < $b.text()) {
+                    return -1;
+                  }
+                  return 0;
+                });
+                $itemsToRestore.appendTo($itemsToRestoreParent);
+                return $itemsToRemove.remove();
+              }
+            };
           };
-        };
-        $titlesItems.css({
-          opacity: 0
-        }).animate({
-          opacity: "1"
-        }, duration);
-        _results.push($titlesItemsPrevious.css({
-          opacity: 1
-        }).animate({
-          opacity: "0"
-        }, duration, animationCallback($titlesItemsPrevious)));
+          arraySorted = arrayOriginal.slice(0).sort();
+          $titlesItems.each(function(index, el) {
+            return $(el).css({
+              opacity: 0
+            }).animate({
+              top: arraySorted.indexOf(arrayOriginal[index]) * 30,
+              opacity: 1
+            }, duration, animationCallback($titlesItems, $titlesList, $titlesItemsPrevious, arraySorted.length));
+          });
+          _results.push($titlesItemsPrevious.each(function(index, el) {
+            return $(el).animate({
+              top: arraySorted.indexOf(arrayOriginal[index]) * 30,
+              opacity: 0
+            }, duration, animationCallback($titlesItems, $titlesList, $titlesItemsPrevious, arraySorted.length));
+          }));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };

@@ -707,8 +707,10 @@ Created by WB—Tech, http://wbtech.pro/
     # TODO: Stop on mouse hover
 
   WBTRotator::changeLocale = (e)->
-    @cfg.language = $(e.target).val().toUpperCase()
-    @updateLocalization()
+    languageNew = $(e.target).val().toUpperCase()
+    if languageNew isnt @cfg.language
+      @cfg.language = languageNew
+      @updateLocalization()
 
   WBTRotator::updateLocalization = (duration = @cfg.animationDuration)->
     @$el.attr "lang", @cfg.language
@@ -771,37 +773,64 @@ Created by WB—Tech, http://wbtech.pro/
     for titlesList in $(".wbt-rotator-category_wrap")
       $titlesList = $(titlesList)
       $titlesItems = $titlesList.find(".wbt-rotator-titles_item")
-      $titlesItemsPrevious = $titlesItems.clone().appendTo $titlesList
-      $titlesItemsPrevious.each (index, el)->
+
+      if not duration
+        $titlesList.css "height", $titlesItems.length * 30
+
+      $titlesItems.each (index, el)->
         $(el).css
-          opacity: "0"
-          position: "absolute"
-          left: "0"
-          right: "0"
           top: index * 30 + "px"
 
-      # Change titles text
+      if duration
+        $titlesItemsPrevious = $titlesItems.clone(true).addClass("wbt-rotator-titles_item__clone").appendTo $titlesList
+
+      # Get sorted array and change titles text
+      arrayOriginal = []
+      arraySorted = []
+
       $titlesItems.each (index, el)=>
         $el = $(el)
         titleId = $el.data("title")
         val = $.wbtRotator.l10n[@cfg.language].masks[titleId].title
         if val is "{{EN}}" or not val
           val = $.wbtRotator.l10n["en"].masks[titleId].title
+        arrayOriginal.push val
         $el.attr("title", val).children("span").eq(0).text(val)
 
-      # Sort titles
-      $titlesItems.sort (a, b)->
-        return 1 if $(a).text() > $(b).text()
-        return -1 if $(a).text() < $(b).text()
-        return 0
-      $titlesItems.appendTo $titlesList
-
       # Animate
-      animationCallback = ($itemsToRemove)->
-        ->
-          $itemsToRemove.remove()
-      $titlesItems.css(opacity: 0).animate {opacity: "1"}, duration
-      $titlesItemsPrevious.css(opacity: 1).animate {opacity: "0"}, duration, animationCallback($titlesItemsPrevious)
+      if duration
+        animationCallback = ($itemsToRestore, $itemsToRestoreParent, $itemsToRemove, total)->
+          $itemsToRestore.parent().data("count", 0)
+          ->
+            count = $itemsToRestore.parent().data("count") + 1
+            $itemsToRestore.parent().data("count", count)
+
+            # When all animations finished
+            if count is total
+
+              # Sort titles
+              $itemsToRestore.sort (a, b)->
+                $a = $(a)
+                $b = $(b)
+                return 1 if $a.text() > $b.text()
+                return -1 if $a.text() < $b.text()
+                return 0
+              $itemsToRestore.appendTo $itemsToRestoreParent
+
+              # Remove clones
+              $itemsToRemove.remove()
+
+        arraySorted = arrayOriginal.slice(0).sort()
+
+        # Animate items
+        $titlesItems.each (index, el)->
+          $(el).css(opacity: 0)
+               .animate {top: arraySorted.indexOf(arrayOriginal[index]) * 30, opacity: 1}, duration, animationCallback($titlesItems, $titlesList, $titlesItemsPrevious, arraySorted.length)
+
+        # Animate clones
+        $titlesItemsPrevious.each (index, el)->
+          $(el).animate {top: arraySorted.indexOf(arrayOriginal[index]) * 30, opacity: 0}, duration, animationCallback($titlesItems, $titlesList, $titlesItemsPrevious, arraySorted.length)
+
 
   WBTRotator::localizeDescriptions = (duration)->
     $descriptionsList = $(".wbt-rotator-descriptions_list")
