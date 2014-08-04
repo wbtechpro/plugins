@@ -14,7 +14,7 @@
 .wbt-rotator-legend a {color:#fff;}
 .wbt-rotator-legend a:hover {text-decoration:none;}
 .wbt-rotator__loaded .wbt-rotator-legend {display:block;}
-.wbt-rotator-category_title {padding:5px 0 0;font-size:19px;line-height:25px;}
+.wbt-rotator-category_title {margin-bottom:10px;padding:15px 0 0;font-size:19px;line-height:25px;}
 .wbt-rotator-category_wrap {position:relative;}
 .wbt-rotator-heading {position:relative;float:left;width:30%;max-width:192px;padding:0 46px 0 0;margin:0 0 10px 0;font-size:19px;line-height:25px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
 .wbt-rotator-heading_text {}
@@ -33,8 +33,8 @@
 .wbt-rotator-descriptions_item {display:none;}
 .wbt-rotator-descriptions_item__active {display:block;}
 @media only screen and (max-width: 1276px) {
-    .wbt-rotator-heading {float:none;width:auto;max-width:none;margin-right:0;}
-    .wbt-rotator-titles_list {float:none;width:auto;max-width:none;margin:0;}
+    .wbt-rotator-heading {float:none;}
+    .wbt-rotator-titles_list {float:none;}
     .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;margin:20px 0 0;}
 }
 .wbt-rotator-scroll {position:absolute;z-index:3;left:6.25%;bottom:16px;right:6.25%;height:16px;border:1px solid rgba(255,255,255,.3);border-radius:6px;cursor:pointer;}
