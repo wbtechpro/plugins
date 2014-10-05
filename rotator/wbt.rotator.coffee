@@ -207,6 +207,7 @@ Created by WB—Tech, http://wbtech.pro/
     frameSrc: ""
     frameFirst: 0
     first: 0
+    sort: true
     masksCategories: []
     leadingZero: true
     autoLoad: true
@@ -799,9 +800,9 @@ Created by WB—Tech, http://wbtech.pro/
 
       # Animate
       if duration
-        animationCallback = ($itemsToRestore, $itemsToRestoreParent, $itemsToRemove, total)->
+        animationCallback = ($itemsToRestore, $itemsToRestoreParent, $itemsToRemove, total)=>
           $itemsToRestore.parent().data("count", 0)
-          ->
+          =>
             count = $itemsToRestore.parent().data("count") + 1
             $itemsToRestore.parent().data("count", count)
 
@@ -809,18 +810,22 @@ Created by WB—Tech, http://wbtech.pro/
             if count is total
 
               # Sort titles
-              $itemsToRestore.sort (a, b)->
-                $a = $(a)
-                $b = $(b)
-                return 1 if $a.text() > $b.text()
-                return -1 if $a.text() < $b.text()
-                return 0
-              $itemsToRestore.appendTo $itemsToRestoreParent
+              if @cfg.sort
+                $itemsToRestore.sort (a, b)->
+                  $a = $(a)
+                  $b = $(b)
+                  return 1 if $a.text() > $b.text()
+                  return -1 if $a.text() < $b.text()
+                  return 0
+                $itemsToRestore.appendTo $itemsToRestoreParent
 
               # Remove clones
               $itemsToRemove.remove()
 
-        arraySorted = arrayOriginal.slice(0).sort()
+        if @cfg.sort
+          arraySorted = arrayOriginal.slice(0).sort()
+        else
+          arraySorted = arrayOriginal.slice(0)
 
         # Animate items
         $titlesItems.each (index, el)->
