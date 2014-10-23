@@ -138,9 +138,12 @@ Created by WB—Tech, http://wbtech.pro/
         this.$maskTitles = $("<div></div>").attr({
           "class": "wbt-rotator-titles_list"
         }).appendTo(this.$maskLegend);
-        this.$maskDescriptions = $("<ul></ul>").attr({
-          "class": "wbt-rotator-descriptions_list"
-        }).appendTo(this.$maskLegend);
+        if (this.cfg.legendDescriptions) {
+          this.$el.addClass("wbt-rotator__descriptions");
+          this.$maskDescriptions = $("<ul></ul>").attr({
+            "class": "wbt-rotator-descriptions_list"
+          }).appendTo(this.$maskLegend);
+        }
         _ref1 = this.cfg.masksCategories;
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           category = _ref1[_j];
@@ -179,7 +182,9 @@ Created by WB—Tech, http://wbtech.pro/
               $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo(this.$legendTitles[mask.titleId]).css({
                 "background-color": mask.color || this.cfg.mask.color
               });
-              this.$legendDescriptions[mask.titleId] = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(this.$maskDescriptions).data("title", mask.titleId).html(mask.titleId);
+              if (this.cfg.legendDescriptions) {
+                this.$legendDescriptions[mask.titleId] = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(this.$maskDescriptions).data("title", mask.titleId).html(mask.titleId);
+              }
             }
           }
         }
@@ -243,6 +248,7 @@ Created by WB—Tech, http://wbtech.pro/
       circular: true,
       fogging: true,
       legend: true,
+      legendDescriptions: true,
       slider: true,
       animationDuration: 500,
       mask: {
@@ -629,7 +635,11 @@ Created by WB—Tech, http://wbtech.pro/
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
           this.$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__active", mask.titleId === this.masks.current);
-          _results.push(this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId === this.masks.current));
+          if (this.cfg.legendDescriptions) {
+            _results.push(this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId === this.masks.current));
+          } else {
+            _results.push(void 0);
+          }
         }
         return _results;
       }
@@ -655,7 +665,11 @@ Created by WB—Tech, http://wbtech.pro/
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           mask = _ref1[_j];
           this.$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__hover", mask.titleId === title);
-          _results.push(this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__hover", mask.titleId === title));
+          if (this.cfg.legendDescriptions) {
+            _results.push(this.$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__hover", mask.titleId === title));
+          } else {
+            _results.push(void 0);
+          }
         }
         return _results;
       }
@@ -678,7 +692,11 @@ Created by WB—Tech, http://wbtech.pro/
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           mask = _ref[_i];
           this.$legendTitles[mask.titleId].removeClass("wbt-rotator-titles_item__hover");
-          _results.push(this.$legendDescriptions[mask.titleId].removeClass("wbt-rotator-descriptions_item__hover"));
+          if (this.cfg.legendDescriptions) {
+            _results.push(this.$legendDescriptions[mask.titleId].removeClass("wbt-rotator-descriptions_item__hover"));
+          } else {
+            _results.push(void 0);
+          }
         }
         return _results;
       }
@@ -867,7 +885,9 @@ Created by WB—Tech, http://wbtech.pro/
       this.localizeHeading(duration);
       this.localizeCategories(duration);
       this.localizeTitles(duration);
-      return this.localizeDescriptions(duration);
+      if (this.cfg.legendDescriptions) {
+        return this.localizeDescriptions(duration);
+      }
     };
     WBTRotator.prototype.localizeHeading = function(duration) {
       var $heading, $headingTextActive, $headingTextPrevious, val;

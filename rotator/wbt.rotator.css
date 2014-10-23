@@ -16,9 +16,11 @@
 .wbt-rotator__loaded .wbt-rotator-legend {display:block;}
 .wbt-rotator-category_title {margin-bottom:10px;padding:15px 0 0;font-size:19px;line-height:25px;}
 .wbt-rotator-category_wrap {position:relative;}
-.wbt-rotator-heading {position:relative;float:left;width:30%;max-width:192px;padding:0 46px 0 0;margin:0 0 10px 0;font-size:19px;line-height:25px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+.wbt-rotator-heading {position:relative;padding:0 46px 0 0;margin:0 0 10px 0;font-size:19px;line-height:25px;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;}
+.wbt-rotator__descriptions .wbt-rotator-heading {float:left;width:192px;max-width:100%;}
 .wbt-rotator-heading_text {}
-.wbt-rotator-titles_list {position:relative;clear:left;float:left;width:30%;max-width:194px;margin:0;padding:0;font-size:15px;line-height:16px;list-style:none;}
+.wbt-rotator-titles_list {position:relative;clear:left;margin:0;padding:0;font-size:15px;line-height:16px;list-style:none;}
+.wbt-rotator__descriptions .wbt-rotator-titles_list {float:left;width:194px;max-width:100%;margin:0 10% 20px 0;}
 .wbt-rotator-titles_item {position:absolute;left:0;right:0;margin:0;padding:6px 24px 8px 0;overflow:hidden;cursor:pointer;-webkit-transition-duration:100ms;transition-duration:100ms;-webkit-transition-property:color;transition-property:color;}
 .wbt-rotator-titles_item:after {display:block;position:relative;top:1px;white-space:nowrap;overflow:hidden;font-size:10px;direction:rtl;content:". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .";}
 .wbt-rotator-titles_item:hover,
@@ -29,14 +31,16 @@
 [lang="LA"] .wbt-rotator-titles_text {font-style:italic;position:relative;top:-2px;}
 .wbt-rotator-titles_icon {position:absolute;width:14px;height:14px;right:3px;top:4px;background-color:#999;}
 .wbt-rotator-titles_item__active .wbt-rotator-titles_icon {top:1px;right:0;border:3px solid #fff;border-radius:2px;}
-.wbt-rotator-descriptions_list {position:relative;float:left;width:60%;max-width:280px;margin:0 0 0 10%;padding:0;font-size:13px;line-height:25px;list-style:none;}
-.wbt-rotator-descriptions_item {display:none;}
-.wbt-rotator-descriptions_item__active {display:block;}
-@media only screen and (max-width: 1276px) {
-    .wbt-rotator-heading {float:none;}
-    .wbt-rotator-titles_list {float:none;}
-    .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;margin:20px 0 0;}
-}
+
+.wbt-rotator__descriptions .wbt-rotator-descriptions_list {position:relative;float:left;width:280px;max-width:100%;margin:0;padding:0;font-size:13px;line-height:25px;list-style:none;}
+.wbt-rotator__descriptions .wbt-rotator-descriptions_item {display:none;}
+.wbt-rotator__descriptions .wbt-rotator-descriptions_item__active {display:block;}
+/*@media only screen and (max-width: 1276px) {*/
+    /*.wbt-rotator__descriptions .wbt-rotator-heading {float:none;}*/
+    /*.wbt-rotator__descriptions .wbt-rotator-titles_list {float:none;}*/
+    /*.wbt-rotator__descriptions .wbt-rotator-descriptions_list {float:none;width:auto;max-width:none;margin:20px 0 0;}*/
+/*}*/
+
 .wbt-rotator-scroll {position:absolute;z-index:3;left:6.25%;bottom:16px;right:6.25%;height:16px;border:1px solid rgba(255,255,255,.3);border-radius:6px;cursor:pointer;}
 .wbt-rotator-scroll_path {position:relative;height:100%;margin:0 102px 0 0;}
 .wbt-rotator-scroll_track {position:absolute;left:0;top:0;bottom:0;width:0%;padding-right:6px;background:rgba(255,255,255,.1);}

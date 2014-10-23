@@ -115,7 +115,9 @@ Created by WB—Tech, http://wbtech.pro/
       @$maskLegend = $("<div></div>").attr("class": "wbt-rotator-legend").appendTo(@$el) # TODO don't need these vars?
       @$legendHeading = $("<div><span class='wbt-rotator-heading_text'></span></div>").attr("class": "wbt-rotator-heading").appendTo(@$maskLegend)
       @$maskTitles = $("<div></div>").attr("class": "wbt-rotator-titles_list").appendTo(@$maskLegend)
-      @$maskDescriptions = $("<ul></ul>").attr("class": "wbt-rotator-descriptions_list").appendTo(@$maskLegend)
+      if @cfg.legendDescriptions
+        @$el.addClass "wbt-rotator__descriptions"
+        @$maskDescriptions = $("<ul></ul>").attr("class": "wbt-rotator-descriptions_list").appendTo(@$maskLegend)
 
       # Set categories for masks
       for category in @cfg.masksCategories
@@ -140,7 +142,8 @@ Created by WB—Tech, http://wbtech.pro/
             @$legendTitles[mask.titleId] = $("<div></div>").attr("class", "wbt-rotator-titles_item").appendTo($categoryWrap).data("title", mask.titleId)
             $("<span></span>").attr("class", "wbt-rotator-titles_text").appendTo(@$legendTitles[mask.titleId]).html(mask.titleId)
             $("<span></span>").attr("class", "wbt-rotator-titles_icon").appendTo(@$legendTitles[mask.titleId]).css("background-color": mask.color or @cfg.mask.color)
-            @$legendDescriptions[mask.titleId] = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(@$maskDescriptions).data("title", mask.titleId).html(mask.titleId)
+            if @cfg.legendDescriptions
+              @$legendDescriptions[mask.titleId] = $("<li></li>").attr("class", "wbt-rotator-descriptions_item").appendTo(@$maskDescriptions).data("title", mask.titleId).html(mask.titleId)
 
       @$maskLegend.on "#{if $.wbtIsTouch() then "singleTap" else "click"}", ".wbt-rotator-titles_item", $.proxy(@onPathClick, @, null) # Sending null to set proper arguments order for both click and hover events
       if not $.wbtIsTouch()
@@ -221,6 +224,7 @@ Created by WB—Tech, http://wbtech.pro/
     circular: true
     fogging: true
     legend: true
+    legendDescriptions: true
     slider: true
     animationDuration: 500
     mask:
@@ -525,7 +529,8 @@ Created by WB—Tech, http://wbtech.pro/
     if @cfg.legend
       for mask in @cfg.maskSrc
         @$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__active", mask.titleId is @masks.current)
-        @$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId is @masks.current)
+        if @cfg.legendDescriptions
+          @$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__active", mask.titleId is @masks.current)
 
   WBTRotator::onPathOver = (el, e)->
     title = if el then el.data("title") else $(e.target).data("title") or $(e.target).closest(".wbt-rotator-titles_item").data("title")
@@ -540,7 +545,8 @@ Created by WB—Tech, http://wbtech.pro/
     if @cfg.legend
       for mask in @cfg.maskSrc
         @$legendTitles[mask.titleId].toggleClass("wbt-rotator-titles_item__hover", mask.titleId is title)
-        @$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__hover", mask.titleId is title)
+        if @cfg.legendDescriptions
+          @$legendDescriptions[mask.titleId].toggleClass("wbt-rotator-descriptions_item__hover", mask.titleId is title)
 
 
   WBTRotator::onPathOut = (el, e)->
@@ -554,7 +560,8 @@ Created by WB—Tech, http://wbtech.pro/
     if @cfg.legend
       for mask in @cfg.maskSrc
         @$legendTitles[mask.titleId].removeClass("wbt-rotator-titles_item__hover")
-        @$legendDescriptions[mask.titleId].removeClass("wbt-rotator-descriptions_item__hover")
+        if @cfg.legendDescriptions
+          @$legendDescriptions[mask.titleId].removeClass("wbt-rotator-descriptions_item__hover")
 
 
   WBTRotator::onSliderPointerDown = (e)->
@@ -718,7 +725,8 @@ Created by WB—Tech, http://wbtech.pro/
     @localizeHeading(duration)
     @localizeCategories(duration)
     @localizeTitles(duration)
-    @localizeDescriptions(duration)
+    if @cfg.legendDescriptions
+      @localizeDescriptions(duration)
 
   WBTRotator::localizeHeading = (duration)->
     $heading = $(".wbt-rotator-heading")
