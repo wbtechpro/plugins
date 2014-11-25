@@ -1,5 +1,5 @@
 ###
-wbt.rotator.js v3.0.3
+wbt.rotator.js v3.0.4
 
 Dependencies: jQuery 1.7+, Snap SVG 0.2+
 
