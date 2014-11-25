@@ -376,6 +376,9 @@ Created by WB—Tech, http://wbtech.pro/
         return function(index, el) {
           var pathNew;
           pathNew = _this.maskSVG.path($(el).attr("d"));
+          pathNew.attr({
+            "fill-rule": "evenodd"
+          });
           if ($.wbtIsTouch()) {
             pathNew.touchstart(function() {
               return _this.pointerMoved = false;

@@ -325,6 +325,8 @@ Created by WB—Tech, http://wbtech.pro/
 
     $(documentSVG).find("path").each (index, el)=>
       pathNew = @maskSVG.path $(el).attr("d")
+      pathNew.attr
+        "fill-rule": "evenodd"
 #      pathNew.transform("s.25,.25,0,0") #TODO automatically get proper sizes
       if $.wbtIsTouch()
         pathNew.touchstart =>
